@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package quark;
+
+option go_package = "proto/";
+
+message Command {
+  oneof type {
+    Connect connect = 1;
+    Disconnect disconnect = 2;
+    Ping ping = 3;
+    Ack ack = 4;
+  }
+}
+
+message Connect {}
+message Disconnect {}
+message Ping {}
+message Ack {}
