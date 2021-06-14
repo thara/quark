@@ -12,7 +12,8 @@ import (
 
 const maxBufferSize = 1024
 
-const timeout = 10 * time.Second
+const writeTimeout = 3 * time.Second
+const peerTimeout = 10 * time.Second
 
 func run(ctx context.Context, addr string) error {
 	pc, err := net.ListenPacket("udp", addr)
@@ -39,12 +40,16 @@ func run(ctx context.Context, addr string) error {
 
 			id := PeerID(srcAddr.String())
 
-			if !rm.HasPeer(id) {
-				rm.AddPeerTo(srcAddr, id)
+			src, ok := rm.GetPeer(id)
+			if !ok {
+				src = rm.AddPeerTo(srcAddr, id)
 				fmt.Printf("Add peer: %s\n", srcAddr.String())
 			}
 
-			deadline := time.Now().Add(timeout)
+			now := time.Now()
+			src.expiry = now.Add(peerTimeout)
+
+			deadline := now.Add(writeTimeout)
 			if err := pc.SetWriteDeadline(deadline); err != nil {
 				doneCh <- errors.WithStack(err)
 				return
@@ -60,6 +65,24 @@ func run(ctx context.Context, addr string) error {
 					continue
 				}
 				fmt.Printf("write: bytes=%d from=%s\n", n, p.addr.String())
+			}
+		}
+	}()
+
+	// peer timeout
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	go func() {
+		for {
+			select {
+			case t := <-ticker.C:
+				for _, p := range rm.Peers() {
+					if t.After(p.expiry) {
+						if rm.RemovePeer(p.id) {
+							p.Write(pc, []byte("timeout."))
+						}
+					}
+				}
 			}
 		}
 	}()
