@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	"quark/gameserver"
-	"quark/gameserver/server"
+	"quark/gameserver/room"
 )
 
 var addr string
@@ -27,6 +27,6 @@ func main() {
 
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
-	gameserver.RegisterRoomServer(grpcServer, server.NewRoomServer())
+	gameserver.RegisterRoomServer(grpcServer, room.NewRoomServer())
 	grpcServer.Serve(lis)
 }
