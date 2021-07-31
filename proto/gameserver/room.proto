@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package quark.gameserver;
+
+option go_package = "quark/gameserver";
+
+service Room {
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  rpc Service(stream Command) returns (stream Event);
+}
+
+message CreateRoomRequest {
+  string roomName = 1;
+}
+
+message CreateRoomResponse {
+  uint64 roomID = 1;
+  bool alreadyExist = 2;
+}
+
+message Command {
+  oneof commandType {
+    JoinRoom joinRoom = 1;
+    SendMessage sendMessage = 2;
+    LeaveRoom leaveRoom = 3;
+  }
+}
+
+message JoinRoom {
+  uint64 roomID = 1;
+}
+message SendMessage {
+  Message message = 1;
+}
+message LeaveRoom {}
+
+message Event {
+  oneof eventType {
+    CommandOperationError commandOperationError = 1;
+    MessageReceived messageReceived = 2;
+  }
+
+}
+
+message MessageReceived {
+  Message message = 1;
+  string senderID = 2;
+}
+
+message CommandOperationError {
+  string errorCode = 1;
+  string errorDetail = 2;
+
+  oneof commandType {
+    JoinRoom joinRoom = 3;
+    SendMessage sendMessage = 4;
+    LeaveRoom leaveRoom = 5;
+  }
+}
+
+message Message {
+  uint32 code = 1;
+  bytes payload = 2;
+}

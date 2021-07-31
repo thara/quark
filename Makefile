@@ -15,5 +15,24 @@ $(PROTOC_GEN_GO):
 $(PROTOC_GEN_GO_GRPC):
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v$(PROTOC_GEN_GO_GRPC_VERSION)
 
-quark:
-	go build -ldflags '-X quark.Version=$(QUARK_VERSION)' .
+.PHONY: clean
+clean:
+	rm -rf bin
+	rm -f gameserver/*.pb.go
+
+.PHONY: fmt
+fmt:
+	go fmt $$(go list ./...)
+	clang-format -i proto/**/*.proto
+
+gameserver/room.pb.go: $(PROTOC_GEN_GO)
+	protoc --go_out=.. proto/gameserver/room.proto
+
+gameserver/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
+	protoc --go-grpc_out=.. proto/gameserver/room.proto
+
+gameserver: gameserver/room.pb.go gameserver/room_grpc.pb.go $(wildcard gameserver/**/*.go)
+	go build -o bin/$@ ./gameserver/cmd/gameserver
+
+# quark:
+# 	go build -ldflags '-X quark.Version=$(QUARK_VERSION)' .
