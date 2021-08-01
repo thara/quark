@@ -31,8 +31,16 @@ message LeaveRoom {}
 message Event {
   oneof eventType {
     CommandOperationError commandOperationError = 1;
-    MessageReceived messageReceived = 2;
+    JoinRoomSucceed joinRoomSucceed = 2;
+    LeaveRoomSucceed leaveRoomSucceed = 3;
+    MessageReceived messageReceived = 4;
   }
+}
+
+message JoinRoomSucceed {
+  string actorID = 1;
+}
+message LeaveRoomSucceed {
 }
 
 message MessageReceived {
