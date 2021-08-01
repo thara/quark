@@ -9,9 +9,7 @@ service Room {
   rpc Service(stream Command) returns (stream Event);
 }
 
-message CreateRoomRequest {
-  string roomName = 1;
-}
+message CreateRoomRequest { string roomName = 1; }
 
 message CreateRoomResponse {
   uint64 roomID = 1;
@@ -26,12 +24,8 @@ message Command {
   }
 }
 
-message JoinRoom {
-  uint64 roomID = 1;
-}
-message SendMessage {
-  Message message = 1;
-}
+message JoinRoom { uint64 roomID = 1; }
+message SendMessage { Message message = 1; }
 message LeaveRoom {}
 
 message Event {
@@ -39,7 +33,6 @@ message Event {
     CommandOperationError commandOperationError = 1;
     MessageReceived messageReceived = 2;
   }
-
 }
 
 message MessageReceived {
