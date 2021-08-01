@@ -38,6 +38,9 @@ func (s *roomServer) CreateRoom(ctx context.Context, req *gameserver.CreateRoomR
 
 func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 	fail := make(chan error, 1)
+
+	joinSucceed := make(chan interface{})
+	leaveSucceed := make(chan interface{})
 	cmdFailed := make(chan commandError, 1)
 
 	subscription := make(chan message)
@@ -79,6 +82,7 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 				if r, ok := s.roomList.getRoom(roomID); ok {
 					r.Join(subscription)
 					atomic.StoreUint64(&curRoom, roomID.Uint64())
+					joinSucceed <- struct{}{}
 				} else {
 					cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
 				}
@@ -86,6 +90,7 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 				if r, ok := currentRoom(); ok {
 					r.Leave(subscription)
 				}
+				leaveSucceed <- struct{}{}
 			case *gameserver.Command_SendMessage:
 				cmd := c.SendMessage
 				if r, ok := currentRoom(); ok {
@@ -104,6 +109,26 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 	go func() {
 		for {
 			select {
+			case <-joinSucceed:
+				ev := gameserver.Event{
+					EventType: &gameserver.Event_JoinRoomSucceed{
+						JoinRoomSucceed: &gameserver.JoinRoomSucceed{
+							ActorID: actorID.String(),
+						},
+					},
+				}
+				if err := stream.Send(&ev); err != nil {
+					fail <- err
+				}
+			case <-leaveSucceed:
+				ev := gameserver.Event{
+					EventType: &gameserver.Event_LeaveRoomSucceed{
+						LeaveRoomSucceed: &gameserver.LeaveRoomSucceed{},
+					},
+				}
+				if err := stream.Send(&ev); err != nil {
+					fail <- err
+				}
 			case m := <-subscription:
 				if m.sender == actorID {
 					// skip send

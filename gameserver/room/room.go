@@ -42,7 +42,6 @@ func newRoom() *room {
 				subscribers[s] = true
 			case s := <-leave:
 				delete(subscribers, s)
-				close(s)
 			case m := <-messages:
 				for s := range subscribers {
 					s <- m

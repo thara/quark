@@ -47,6 +47,7 @@ func (l *roomList) newRoom(name string) (roomID, bool) {
 		l.mux.Lock()
 		defer l.mux.Unlock()
 		l.rooms[newID] = room
+		l.names[name] = newID
 	}()
 
 	return newID, false
