@@ -166,7 +166,7 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 		select {
 		case <-stream.Context().Done():
 			leaveRoom()
-			return stream.Context().Err()
+			return nil
 		case err := <-fail:
 			return err
 		}

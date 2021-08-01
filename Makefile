@@ -41,5 +41,8 @@ gameserver/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
 gameserver: gameserver/room.pb.go gameserver/room_grpc.pb.go health/health.pb.go health/health_grpc.pb.go $(wildcard gameserver/**/*.go)
 	go build -o bin/$@ ./gameserver/cmd/gameserver
 
+sample_chatclient: gameserver
+	go run ./gameserver/cmd/chatclient/main.go
+
 # quark:
 # 	go build -ldflags '-X quark.Version=$(QUARK_VERSION)' .
