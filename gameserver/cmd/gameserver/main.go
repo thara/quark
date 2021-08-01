@@ -8,6 +8,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"quark/gameserver"
@@ -32,7 +37,23 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var opts []grpc.ServerOption
+	zapLogger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("failed to initialize zap logger: %v", err)
+	}
+
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_recovery.UnaryServerInterceptor(),
+			grpc_ctxtags.UnaryServerInterceptor(),
+			grpc_zap.UnaryServerInterceptor(zapLogger),
+		)),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_recovery.StreamServerInterceptor(),
+			grpc_ctxtags.StreamServerInterceptor(),
+			grpc_zap.StreamServerInterceptor(zapLogger),
+		)),
+	}
 	grpcServer := grpc.NewServer(opts...)
 	health.RegisterHealthServer(grpcServer, new(healthServer))
 	gameserver.RegisterRoomServer(grpcServer, room.NewRoomServer())
