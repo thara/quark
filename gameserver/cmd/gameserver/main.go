@@ -12,6 +12,7 @@ import (
 
 	"quark/gameserver"
 	"quark/gameserver/room"
+	"quark/health"
 )
 
 var addr string
@@ -33,6 +34,7 @@ func main() {
 
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
+	health.RegisterHealthServer(grpcServer, new(healthServer))
 	gameserver.RegisterRoomServer(grpcServer, room.NewRoomServer())
 
 	go func() {
