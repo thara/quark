@@ -1,11 +1,7 @@
-package room
-
-import (
-	"quark"
-)
+package quark
 
 type Actor struct {
-	id quark.ActorID
+	id ActorID
 
 	setEntry chan<- *RoomEntry
 	getEntry chan<- *getActorEntry
@@ -23,7 +19,7 @@ type getActorEntry struct {
 }
 
 func NewActor() *Actor {
-	actorID := quark.NewActorID()
+	actorID := NewActorID()
 
 	setEntry := make(chan *RoomEntry)
 	getEntry := make(chan *getActorEntry)
@@ -54,7 +50,7 @@ func NewActor() *Actor {
 	}
 }
 
-func (a *Actor) ActorID() quark.ActorID {
+func (a *Actor) ActorID() ActorID {
 	return a.id
 }
 

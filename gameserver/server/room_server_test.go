@@ -5,8 +5,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"quark/proto"
-	"quark/room"
 	"testing"
 	"time"
 
@@ -14,11 +12,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
+
+	"quark"
+	"quark/proto"
 )
 
 func TestRoomServer_CreateRoom(t *testing.T) {
 	roomServer := &roomServer{
-		roomSet: room.NewRoomSet(),
+		roomSet: quark.NewRoomSet(),
 	}
 
 	ctx := context.Background()
@@ -54,7 +55,7 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 
 func TestRoomServer_Service(t *testing.T) {
 	roomServer := &roomServer{
-		roomSet: room.NewRoomSet(),
+		roomSet: quark.NewRoomSet(),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

@@ -1,11 +1,7 @@
-package room
-
-import (
-	"quark"
-)
+package quark
 
 type Message struct {
-	Sender  quark.ActorID
+	Sender  ActorID
 	Code    uint32
 	Payload []byte
 }

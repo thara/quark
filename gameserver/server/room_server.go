@@ -3,21 +3,22 @@ package server
 import (
 	"context"
 	"io"
-	"quark/proto"
-	"quark/room"
 
 	"github.com/google/uuid"
+
+	"quark"
+	"quark/proto"
 )
 
 type roomServer struct {
 	proto.UnimplementedRoomServer
 
-	roomSet *room.RoomSet
+	roomSet *quark.RoomSet
 }
 
 func NewRoomServer() proto.RoomServer {
 	return &roomServer{
-		roomSet: room.NewRoomSet(),
+		roomSet: quark.NewRoomSet(),
 	}
 }
 
@@ -45,7 +46,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	cmdFailed := make(chan commandError, 1)
 	defer close(cmdFailed)
 
-	actor := room.NewActor()
+	actor := quark.NewActor()
 
 	go func() {
 		defer actor.Stop()
@@ -67,7 +68,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				switch c := in.CommandType.(type) {
 				case *proto.Command_JoinRoom:
 					cmd := c.JoinRoom
-					roomID := room.RoomID(cmd.RoomID)
+					roomID := quark.RoomID(cmd.RoomID)
 					if r, ok := s.roomSet.GetRoom(roomID); ok {
 						actor.JoinTo(r)
 						joinSucceed <- struct{}{}
@@ -81,7 +82,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					cmd := c.SendMessage
 
 					if actor.InRoom() {
-						actor.BroadcastToRoom(room.Payload{
+						actor.BroadcastToRoom(quark.Payload{
 							Code: cmd.Message.Code,
 							Body: cmd.Message.Payload})
 					} else {
