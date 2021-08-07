@@ -8,11 +8,11 @@ type Message struct {
 	Payload []byte
 }
 
-type Subscriber chan<- Message
+type Subscription chan<- Message
 
 type Room struct {
-	join     chan<- Subscriber
-	leave    chan<- Subscriber
+	join     chan<- Subscription
+	leave    chan<- Subscription
 	messages chan<- Message
 
 	done chan<- interface{}
@@ -21,8 +21,8 @@ type Room struct {
 func NewRoom() *Room {
 	messages := make(chan Message, 16)
 
-	join := make(chan Subscriber)
-	leave := make(chan Subscriber)
+	join := make(chan Subscription)
+	leave := make(chan Subscription)
 
 	done := make(chan interface{})
 
@@ -32,7 +32,7 @@ func NewRoom() *Room {
 		defer close(messages)
 		defer close(done)
 
-		subscribers := map[Subscriber]bool{}
+		subscribers := map[Subscription]bool{}
 
 		for {
 			select {
@@ -55,11 +55,11 @@ func NewRoom() *Room {
 	}
 }
 
-func (r *Room) Join(s Subscriber) {
+func (r *Room) Join(s Subscription) {
 	r.join <- s
 }
 
-func (r *Room) Leave(s Subscriber) {
+func (r *Room) Leave(s Subscription) {
 	r.leave <- s
 }
 
