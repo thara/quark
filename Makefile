@@ -39,10 +39,10 @@ proto/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
 	protoc --go-grpc_out=.. proto/room.proto
 
 gameserver: proto/room.pb.go proto/room_grpc.pb.go proto/health.pb.go proto/health_grpc.pb.go $(wildcard gameserver/**/*.go)
-	go build -o bin/$@ ./gameserver/cmd/gameserver
+	go build -o bin/$@ ./gameserver
 
 sample_chatclient: gameserver
-	go run ./gameserver/cmd/chatclient/main.go
+	go run ./gameserver/example/chatclient/main.go
 
 # quark:
 # 	go build -ldflags '-X quark.Version=$(QUARK_VERSION)' .

@@ -54,7 +54,7 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterHealthServer(grpcServer, new(healthServer))
+	proto.RegisterHealthServer(grpcServer, new(server.HealthServer))
 	proto.RegisterRoomServer(grpcServer, server.NewRoomServer())
 
 	go func() {

@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -8,16 +8,16 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type healthServer struct {
+type HealthServer struct {
 	proto.UnimplementedHealthServer
 }
 
-func (s *healthServer) Check(context.Context, *proto.HealthCheckRequest) (*proto.HealthCheckResponse, error) {
+func (s *HealthServer) Check(context.Context, *proto.HealthCheckRequest) (*proto.HealthCheckResponse, error) {
 	return &proto.HealthCheckResponse{
 		Status: proto.HealthCheckResponse_SERVING,
 	}, nil
 }
 
-func (s *healthServer) Watch(*proto.HealthCheckRequest, proto.Health_WatchServer) error {
+func (s *HealthServer) Watch(*proto.HealthCheckRequest, proto.Health_WatchServer) error {
 	return status.Errorf(codes.Unimplemented, "method Watch not implemented")
 }
