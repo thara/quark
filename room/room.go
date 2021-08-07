@@ -2,27 +2,27 @@ package room
 
 import "quark"
 
-type message struct {
-	sender  quark.ActorID
-	code    uint32
-	payload []byte
+type Message struct {
+	Sender  quark.ActorID
+	Code    uint32
+	Payload []byte
 }
 
-type subscriber chan<- message
+type Subscriber chan<- Message
 
-type room struct {
-	join     chan<- subscriber
-	leave    chan<- subscriber
-	messages chan<- message
+type Room struct {
+	join     chan<- Subscriber
+	leave    chan<- Subscriber
+	messages chan<- Message
 
 	done chan<- interface{}
 }
 
-func newRoom() *room {
-	messages := make(chan message, 16)
+func NewRoom() *Room {
+	messages := make(chan Message, 16)
 
-	join := make(chan subscriber)
-	leave := make(chan subscriber)
+	join := make(chan Subscriber)
+	leave := make(chan Subscriber)
 
 	done := make(chan interface{})
 
@@ -32,7 +32,7 @@ func newRoom() *room {
 		defer close(messages)
 		defer close(done)
 
-		subscribers := map[subscriber]bool{}
+		subscribers := map[Subscriber]bool{}
 
 		for {
 			select {
@@ -49,24 +49,24 @@ func newRoom() *room {
 			}
 		}
 	}()
-	return &room{
+	return &Room{
 		join: join, leave: leave, messages: messages,
 		done: done,
 	}
 }
 
-func (r *room) Join(s subscriber) {
+func (r *Room) Join(s Subscriber) {
 	r.join <- s
 }
 
-func (r *room) Leave(s subscriber) {
+func (r *Room) Leave(s Subscriber) {
 	r.leave <- s
 }
 
-func (r *room) Send(m message) {
+func (r *Room) Send(m Message) {
 	r.messages <- m
 }
 
-func (r *room) Stop() {
+func (r *Room) Stop() {
 	r.done <- struct{}{}
 }
