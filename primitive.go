@@ -8,6 +8,6 @@ func NewActorID() ActorID {
 	return ActorID(uuid.Must(uuid.NewRandom()).String())
 }
 
-func (a *ActorID) String() string {
-	return string(*a)
+func (a ActorID) String() string {
+	return string(a)
 }

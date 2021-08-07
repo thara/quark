@@ -3,10 +3,8 @@ package server
 import (
 	"context"
 	"io"
-	"quark"
 	"quark/proto"
 	"quark/room"
-	"sync/atomic"
 
 	"github.com/google/uuid"
 )
@@ -41,67 +39,54 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	fail := make(chan error, 1)
 
 	joinSucceed := make(chan interface{})
+	defer close(joinSucceed)
 	leaveSucceed := make(chan interface{})
+	defer close(leaveSucceed)
 	cmdFailed := make(chan commandError, 1)
+	defer close(cmdFailed)
 
-	subscription := make(chan room.Message)
-	defer close(subscription)
-
-	actorID := quark.NewActorID()
-
-	var curRoom uint64
-
-	currentRoom := func() (*room.Room, bool) {
-		id := atomic.LoadUint64(&curRoom)
-		if 0 < id {
-			if r, ok := s.roomSet.GetRoom(room.RoomID(id)); ok {
-				return r, true
-			}
-		}
-		return nil, false
-	}
-	leaveRoom := func() {
-		if r, ok := currentRoom(); ok {
-			r.Leave(subscription)
-		}
-	}
+	actor := room.NewActor()
 
 	go func() {
-		for {
-			in, err := stream.Recv()
-			if err == io.EOF {
-				return
-			} else if err != nil {
-				fail <- err
-				return
-			}
+		defer actor.Stop()
 
-			switch c := in.CommandType.(type) {
-			case *proto.Command_JoinRoom:
-				cmd := c.JoinRoom
-				roomID := room.RoomID(cmd.RoomID)
-				if r, ok := s.roomSet.GetRoom(roomID); ok {
-					r.Join(subscription)
-					atomic.StoreUint64(&curRoom, roomID.Uint64())
-					joinSucceed <- struct{}{}
-				} else {
-					cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
+		for {
+			select {
+			case <-stream.Context().Done():
+				actor.Leave()
+				return
+			default:
+				in, err := stream.Recv()
+				if err == io.EOF {
+					return
+				} else if err != nil {
+					fail <- err
+					return
 				}
-			case *proto.Command_LeaveRoom:
-				if r, ok := currentRoom(); ok {
-					r.Leave(subscription)
-				}
-				leaveSucceed <- struct{}{}
-			case *proto.Command_SendMessage:
-				cmd := c.SendMessage
-				if r, ok := currentRoom(); ok {
-					r.Send(room.Message{
-						Sender:  actorID,
-						Code:    cmd.Message.Code,
-						Payload: cmd.Message.Payload,
-					})
-				} else {
-					cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
+
+				switch c := in.CommandType.(type) {
+				case *proto.Command_JoinRoom:
+					cmd := c.JoinRoom
+					roomID := room.RoomID(cmd.RoomID)
+					if r, ok := s.roomSet.GetRoom(roomID); ok {
+						actor.JoinTo(r)
+						joinSucceed <- struct{}{}
+					} else {
+						cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
+					}
+				case *proto.Command_LeaveRoom:
+					actor.Leave()
+					leaveSucceed <- struct{}{}
+				case *proto.Command_SendMessage:
+					cmd := c.SendMessage
+
+					if actor.InRoom() {
+						actor.BroadcastToRoom(room.Payload{
+							Code: cmd.Message.Code,
+							Body: cmd.Message.Payload})
+					} else {
+						cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
+					}
 				}
 			}
 		}
@@ -114,7 +99,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				ev := proto.Event{
 					EventType: &proto.Event_JoinRoomSucceed{
 						JoinRoomSucceed: &proto.JoinRoomSucceed{
-							ActorID: actorID.String(),
+							ActorID: actor.ActorID().String(),
 						},
 					},
 				}
@@ -130,8 +115,11 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				if err := stream.Send(&ev); err != nil {
 					fail <- err
 				}
-			case m := <-subscription:
-				if m.Sender == actorID {
+			case m, ok := <-actor.Inbox():
+				if !ok {
+					continue
+				}
+				if actor.IsOwnMessage(&m) {
 					// skip send
 					continue
 				}
@@ -166,7 +154,6 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	for {
 		select {
 		case <-stream.Context().Done():
-			leaveRoom()
 			return nil
 		case err := <-fail:
 			return err

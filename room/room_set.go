@@ -26,7 +26,7 @@ func NewRoomSet() *RoomSet {
 }
 
 func (s *RoomSet) Rooms() []*Room {
-	rs := make([]*Room, len(s.rooms))
+	rs := make([]*Room, 0, len(s.rooms))
 	for _, r := range s.rooms {
 		rs = append(rs, r)
 	}
