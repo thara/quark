@@ -4,8 +4,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/google/uuid"
-
 	"quark"
 	"quark/proto"
 )
@@ -23,13 +21,7 @@ func NewRoomServer() proto.RoomServer {
 }
 
 func (s *roomServer) CreateRoom(ctx context.Context, req *proto.CreateRoomRequest) (*proto.CreateRoomResponse, error) {
-	var roomName string
-	if len(req.RoomName) == 0 {
-		roomName = uuid.Must(uuid.NewRandom()).String()
-	} else {
-		roomName = req.RoomName
-	}
-	roomID, loaded := s.roomSet.NewRoom(roomName)
+	roomID, loaded := s.roomSet.NewRoom(req.RoomName)
 	return &proto.CreateRoomResponse{
 		RoomID:       roomID.Uint64(),
 		AlreadyExist: loaded,
@@ -69,8 +61,8 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				case *proto.Command_JoinRoom:
 					cmd := c.JoinRoom
 					roomID := quark.RoomID(cmd.RoomID)
-					if r, ok := s.roomSet.GetRoom(roomID); ok {
-						actor.JoinTo(r)
+					ok := s.roomSet.JoinRoom(roomID, actor)
+					if ok {
 						joinSucceed <- struct{}{}
 					} else {
 						cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
@@ -81,11 +73,10 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				case *proto.Command_SendMessage:
 					cmd := c.SendMessage
 
-					if actor.InRoom() {
-						actor.BroadcastToRoom(quark.Payload{
-							Code: cmd.Message.Code,
-							Body: cmd.Message.Payload})
-					} else {
+					ok := actor.BroadcastToRoom(quark.Payload{
+						Code: cmd.Message.Code,
+						Body: cmd.Message.Payload})
+					if !ok {
 						cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
 					}
 				}

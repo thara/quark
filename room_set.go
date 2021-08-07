@@ -3,6 +3,8 @@ package quark
 import (
 	"math/rand"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type RoomID uint64
@@ -34,6 +36,10 @@ func (s *RoomSet) Rooms() []*Room {
 }
 
 func (s *RoomSet) NewRoom(name string) (RoomID, bool) {
+	if len(name) == 0 {
+		name = uuid.Must(uuid.NewRandom()).String()
+	}
+
 	id, exists := func() (RoomID, bool) {
 		s.mux.RLock()
 		defer s.mux.RUnlock()
@@ -70,4 +76,13 @@ func (s *RoomSet) GetRoom(id RoomID) (*Room, bool) {
 	} else {
 		return nil, false
 	}
+}
+
+func (s *RoomSet) JoinRoom(roomID RoomID, a *Actor) bool {
+	r, ok := s.GetRoom(roomID)
+	if !ok {
+		return false
+	}
+	a.JoinTo(r)
+	return true
 }
