@@ -5,7 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"quark/gameserver"
+	"quark/proto"
 	"testing"
 	"time"
 
@@ -24,11 +24,11 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 	lis := listenServer(ctx, roomServer)
 	conn, err := grpc.DialContext(ctx, "bufnet", listenDialOption(lis), grpc.WithInsecure())
 	require.NoError(t, err)
-	cli := gameserver.NewRoomClient(conn)
+	cli := proto.NewRoomClient(conn)
 
 	roomName := "xxxxxxxx"
 
-	resp, err := cli.CreateRoom(ctx, &gameserver.CreateRoomRequest{
+	resp, err := cli.CreateRoom(ctx, &proto.CreateRoomRequest{
 		RoomName: roomName,
 	})
 	require.NoError(t, err)
@@ -41,7 +41,7 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 
 	roomID := resp.RoomID
 
-	resp, err = cli.CreateRoom(ctx, &gameserver.CreateRoomRequest{
+	resp, err = cli.CreateRoom(ctx, &proto.CreateRoomRequest{
 		RoomName: roomName,
 	})
 	require.NoError(t, err)
@@ -63,7 +63,7 @@ func TestRoomServer_Service(t *testing.T) {
 
 	lis := bufconn.Listen(1024 * 1024)
 	s := grpc.NewServer()
-	gameserver.RegisterRoomServer(s, roomServer)
+	proto.RegisterRoomServer(s, roomServer)
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -76,11 +76,11 @@ func TestRoomServer_Service(t *testing.T) {
 	conn3, err := grpc.DialContext(ctx, "b2", listenDialOption(lis), grpc.WithInsecure())
 	require.NoError(t, err)
 
-	c1 := gameserver.NewRoomClient(conn1)
-	c2 := gameserver.NewRoomClient(conn2)
-	c3 := gameserver.NewRoomClient(conn3)
+	c1 := proto.NewRoomClient(conn1)
+	c2 := proto.NewRoomClient(conn2)
+	c3 := proto.NewRoomClient(conn3)
 
-	resp, err := c1.CreateRoom(ctx, &gameserver.CreateRoomRequest{
+	resp, err := c1.CreateRoom(ctx, &proto.CreateRoomRequest{
 		RoomName: "xxxxxx",
 	})
 	require.NoError(t, err)
@@ -97,9 +97,9 @@ func TestRoomServer_Service(t *testing.T) {
 	// c1: join
 	var senderActorID string
 	{
-		err := s1.Send(&gameserver.Command{
-			CommandType: &gameserver.Command_JoinRoom{
-				JoinRoom: &gameserver.JoinRoom{
+		err := s1.Send(&proto.Command{
+			CommandType: &proto.Command_JoinRoom{
+				JoinRoom: &proto.JoinRoom{
 					RoomID: roomID,
 				},
 			},
@@ -109,14 +109,14 @@ func TestRoomServer_Service(t *testing.T) {
 		m, err := s1.Recv()
 		require.NoError(t, err)
 
-		assert.IsType(t, m.EventType, &gameserver.Event_JoinRoomSucceed{})
-		senderActorID = m.EventType.(*gameserver.Event_JoinRoomSucceed).JoinRoomSucceed.ActorID
+		assert.IsType(t, m.EventType, &proto.Event_JoinRoomSucceed{})
+		senderActorID = m.EventType.(*proto.Event_JoinRoomSucceed).JoinRoomSucceed.ActorID
 	}
 	// c2: join
 	{
-		err := s2.Send(&gameserver.Command{
-			CommandType: &gameserver.Command_JoinRoom{
-				JoinRoom: &gameserver.JoinRoom{
+		err := s2.Send(&proto.Command{
+			CommandType: &proto.Command_JoinRoom{
+				JoinRoom: &proto.JoinRoom{
 					RoomID: roomID,
 				},
 			},
@@ -126,13 +126,13 @@ func TestRoomServer_Service(t *testing.T) {
 		m, err := s2.Recv()
 		require.NoError(t, err)
 
-		assert.IsType(t, m.EventType, &gameserver.Event_JoinRoomSucceed{})
+		assert.IsType(t, m.EventType, &proto.Event_JoinRoomSucceed{})
 	}
 	// c3: join
 	{
-		err := s3.Send(&gameserver.Command{
-			CommandType: &gameserver.Command_JoinRoom{
-				JoinRoom: &gameserver.JoinRoom{
+		err := s3.Send(&proto.Command{
+			CommandType: &proto.Command_JoinRoom{
+				JoinRoom: &proto.JoinRoom{
 					RoomID: roomID,
 				},
 			},
@@ -142,7 +142,7 @@ func TestRoomServer_Service(t *testing.T) {
 		m, err := s3.Recv()
 		require.NoError(t, err)
 
-		assert.IsType(t, m.EventType, &gameserver.Event_JoinRoomSucceed{})
+		assert.IsType(t, m.EventType, &proto.Event_JoinRoomSucceed{})
 	}
 
 	// c1: send msg
@@ -151,10 +151,10 @@ func TestRoomServer_Service(t *testing.T) {
 		payload = make([]byte, 100)
 		rand.Read(payload)
 
-		err := s1.Send(&gameserver.Command{
-			CommandType: &gameserver.Command_SendMessage{
-				SendMessage: &gameserver.SendMessage{
-					Message: &gameserver.Message{
+		err := s1.Send(&proto.Command{
+			CommandType: &proto.Command_SendMessage{
+				SendMessage: &proto.SendMessage{
+					Message: &proto.Message{
 						Code:    code,
 						Payload: payload,
 					},
@@ -170,9 +170,9 @@ func TestRoomServer_Service(t *testing.T) {
 	{
 		m, err := s2.Recv()
 		require.NoError(t, err)
-		assert.IsType(t, m.EventType, &gameserver.Event_MessageReceived{})
+		assert.IsType(t, m.EventType, &proto.Event_MessageReceived{})
 
-		ev := m.EventType.(*gameserver.Event_MessageReceived)
+		ev := m.EventType.(*proto.Event_MessageReceived)
 		msg := ev.MessageReceived
 
 		assert.Equal(t, senderActorID, msg.SenderID)
@@ -183,9 +183,9 @@ func TestRoomServer_Service(t *testing.T) {
 	{
 		m, err := s3.Recv()
 		require.NoError(t, err)
-		assert.IsType(t, m.EventType, &gameserver.Event_MessageReceived{})
+		assert.IsType(t, m.EventType, &proto.Event_MessageReceived{})
 
-		ev := m.EventType.(*gameserver.Event_MessageReceived)
+		ev := m.EventType.(*proto.Event_MessageReceived)
 		msg := ev.MessageReceived
 
 		assert.Equal(t, senderActorID, msg.SenderID)
@@ -195,16 +195,16 @@ func TestRoomServer_Service(t *testing.T) {
 
 	// c3: leave
 	{
-		err := s3.Send(&gameserver.Command{
-			CommandType: &gameserver.Command_LeaveRoom{
-				LeaveRoom: &gameserver.LeaveRoom{},
+		err := s3.Send(&proto.Command{
+			CommandType: &proto.Command_LeaveRoom{
+				LeaveRoom: &proto.LeaveRoom{},
 			},
 		})
 		require.NoError(t, err)
 
 		m, err := s3.Recv()
 		require.NoError(t, err)
-		assert.IsType(t, m.EventType, &gameserver.Event_LeaveRoomSucceed{})
+		assert.IsType(t, m.EventType, &proto.Event_LeaveRoomSucceed{})
 	}
 
 	// c1: send msg 2
@@ -219,10 +219,10 @@ func TestRoomServer_Service(t *testing.T) {
 	<-ctx.Done()
 }
 
-func listenServer(ctx context.Context, rs gameserver.RoomServer) *bufconn.Listener {
+func listenServer(ctx context.Context, rs proto.RoomServer) *bufconn.Listener {
 	lis := bufconn.Listen(1024 * 1024)
 	s := grpc.NewServer()
-	gameserver.RegisterRoomServer(s, rs)
+	proto.RegisterRoomServer(s, rs)
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)

@@ -8,7 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"quark/gameserver"
+	"quark/proto"
 
 	"go.uber.org/atomic"
 	"google.golang.org/grpc"
@@ -36,11 +36,11 @@ func main() {
 	}
 	defer conn.Close()
 
-	cli := gameserver.NewRoomClient(conn)
+	cli := proto.NewRoomClient(conn)
 
 	ctx := context.Background()
 
-	resp, err := cli.CreateRoom(ctx, &gameserver.CreateRoomRequest{
+	resp, err := cli.CreateRoom(ctx, &proto.CreateRoomRequest{
 		RoomName: roomName,
 	})
 	if err != nil {
@@ -57,9 +57,9 @@ func main() {
 		log.Fatalf("fail to service: %v", err)
 	}
 
-	if err := stream.Send(&gameserver.Command{
-		CommandType: &gameserver.Command_JoinRoom{
-			JoinRoom: &gameserver.JoinRoom{
+	if err := stream.Send(&proto.Command{
+		CommandType: &proto.Command_JoinRoom{
+			JoinRoom: &proto.JoinRoom{
 				RoomID: roomID,
 			},
 		},
@@ -83,7 +83,7 @@ func main() {
 			}
 
 			switch ev := in.EventType.(type) {
-			case *gameserver.Event_JoinRoomSucceed:
+			case *proto.Event_JoinRoomSucceed:
 				id := ev.JoinRoomSucceed.ActorID
 				fmt.Printf("You are %s\n", id)
 
@@ -91,10 +91,10 @@ func main() {
 				actorID.Store(id)
 
 				joined <- struct{}{}
-			case *gameserver.Event_LeaveRoomSucceed:
+			case *proto.Event_LeaveRoomSucceed:
 				fmt.Println("bye.")
 				os.Exit(0)
-			case *gameserver.Event_MessageReceived:
+			case *proto.Event_MessageReceived:
 				recvMsg := ev.MessageReceived
 				cmd := parseCmd(recvMsg.SenderID, recvMsg.Message.Code, recvMsg.Message.Payload)
 				cmd.display()
@@ -122,9 +122,9 @@ func main() {
 
 		switch text {
 		case "!exit":
-			if err := stream.Send(&gameserver.Command{
-				CommandType: &gameserver.Command_LeaveRoom{
-					LeaveRoom: &gameserver.LeaveRoom{},
+			if err := stream.Send(&proto.Command{
+				CommandType: &proto.Command_LeaveRoom{
+					LeaveRoom: &proto.LeaveRoom{},
 				},
 			}); err != nil {
 				log.Fatalf("Failed to leave room: %v", err)
@@ -174,20 +174,20 @@ func (t *text) display() {
 	fmt.Printf("\033[0G%s > %s\n", t.senderID, t.text)
 }
 
-func pingCmd() *gameserver.Message {
-	return &gameserver.Message{
+func pingCmd() *proto.Message {
+	return &proto.Message{
 		Code: CmdPing,
 	}
 }
 
-func pongCmd() *gameserver.Message {
-	return &gameserver.Message{
+func pongCmd() *proto.Message {
+	return &proto.Message{
 		Code: CmdPong,
 	}
 }
 
-func textCmd(text string) *gameserver.Message {
-	return &gameserver.Message{
+func textCmd(text string) *proto.Message {
+	return &proto.Message{
 		Code:    CmdText,
 		Payload: []byte(text),
 	}
@@ -206,10 +206,10 @@ func parseCmd(senderID string, code uint32, payload []byte) cmd {
 	}
 }
 
-func sendMessage(stream gameserver.Room_ServiceClient, m *gameserver.Message) error {
-	return stream.Send(&gameserver.Command{
-		CommandType: &gameserver.Command_SendMessage{
-			SendMessage: &gameserver.SendMessage{
+func sendMessage(stream proto.Room_ServiceClient, m *proto.Message) error {
+	return stream.Send(&proto.Command{
+		CommandType: &proto.Command_SendMessage{
+			SendMessage: &proto.SendMessage{
 				Message: m,
 			},
 		},

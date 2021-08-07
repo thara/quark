@@ -4,25 +4,25 @@ import (
 	"context"
 	"io"
 	"quark"
-	"quark/gameserver"
+	"quark/proto"
 	"sync/atomic"
 
 	"github.com/google/uuid"
 )
 
 type roomServer struct {
-	gameserver.UnimplementedRoomServer
+	proto.UnimplementedRoomServer
 
 	roomList *roomList
 }
 
-func NewRoomServer() gameserver.RoomServer {
+func NewRoomServer() proto.RoomServer {
 	return &roomServer{
 		roomList: newRoomList(),
 	}
 }
 
-func (s *roomServer) CreateRoom(ctx context.Context, req *gameserver.CreateRoomRequest) (*gameserver.CreateRoomResponse, error) {
+func (s *roomServer) CreateRoom(ctx context.Context, req *proto.CreateRoomRequest) (*proto.CreateRoomResponse, error) {
 	var roomName string
 	if len(req.RoomName) == 0 {
 		roomName = uuid.Must(uuid.NewRandom()).String()
@@ -30,13 +30,13 @@ func (s *roomServer) CreateRoom(ctx context.Context, req *gameserver.CreateRoomR
 		roomName = req.RoomName
 	}
 	roomID, loaded := s.roomList.newRoom(roomName)
-	return &gameserver.CreateRoomResponse{
+	return &proto.CreateRoomResponse{
 		RoomID:       roomID.Uint64(),
 		AlreadyExist: loaded,
 	}, nil
 }
 
-func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
+func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	fail := make(chan error, 1)
 
 	joinSucceed := make(chan interface{})
@@ -76,7 +76,7 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 			}
 
 			switch c := in.CommandType.(type) {
-			case *gameserver.Command_JoinRoom:
+			case *proto.Command_JoinRoom:
 				cmd := c.JoinRoom
 				roomID := roomID(cmd.RoomID)
 				if r, ok := s.roomList.getRoom(roomID); ok {
@@ -86,12 +86,12 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 				} else {
 					cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
 				}
-			case *gameserver.Command_LeaveRoom:
+			case *proto.Command_LeaveRoom:
 				if r, ok := currentRoom(); ok {
 					r.Leave(subscription)
 				}
 				leaveSucceed <- struct{}{}
-			case *gameserver.Command_SendMessage:
+			case *proto.Command_SendMessage:
 				cmd := c.SendMessage
 				if r, ok := currentRoom(); ok {
 					r.Send(message{
@@ -110,9 +110,9 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 		for {
 			select {
 			case <-joinSucceed:
-				ev := gameserver.Event{
-					EventType: &gameserver.Event_JoinRoomSucceed{
-						JoinRoomSucceed: &gameserver.JoinRoomSucceed{
+				ev := proto.Event{
+					EventType: &proto.Event_JoinRoomSucceed{
+						JoinRoomSucceed: &proto.JoinRoomSucceed{
 							ActorID: actorID.String(),
 						},
 					},
@@ -121,9 +121,9 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 					fail <- err
 				}
 			case <-leaveSucceed:
-				ev := gameserver.Event{
-					EventType: &gameserver.Event_LeaveRoomSucceed{
-						LeaveRoomSucceed: &gameserver.LeaveRoomSucceed{},
+				ev := proto.Event{
+					EventType: &proto.Event_LeaveRoomSucceed{
+						LeaveRoomSucceed: &proto.LeaveRoomSucceed{},
 					},
 				}
 				if err := stream.Send(&ev); err != nil {
@@ -134,11 +134,11 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 					// skip send
 					continue
 				}
-				ev := gameserver.Event{
-					EventType: &gameserver.Event_MessageReceived{
-						MessageReceived: &gameserver.MessageReceived{
+				ev := proto.Event{
+					EventType: &proto.Event_MessageReceived{
+						MessageReceived: &proto.MessageReceived{
 							SenderID: m.sender.String(),
-							Message: &gameserver.Message{
+							Message: &proto.Message{
 								Code:    m.code,
 								Payload: m.payload,
 							},
@@ -150,8 +150,8 @@ func (s *roomServer) Service(stream gameserver.Room_ServiceServer) error {
 				}
 			case c := <-cmdFailed:
 				e := toCommandOperationError(c)
-				ev := gameserver.Event{
-					EventType: &gameserver.Event_CommandOperationError{
+				ev := proto.Event{
+					EventType: &proto.Event_CommandOperationError{
 						CommandOperationError: e,
 					},
 				}
@@ -179,26 +179,26 @@ type commandError struct {
 	cmd    interface{}
 }
 
-func toCommandOperationError(c commandError) *gameserver.CommandOperationError {
+func toCommandOperationError(c commandError) *proto.CommandOperationError {
 	switch cmd := c.cmd.(type) {
-	case *gameserver.Command_JoinRoom:
-		return &gameserver.CommandOperationError{
+	case *proto.Command_JoinRoom:
+		return &proto.CommandOperationError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
-			CommandType: &gameserver.CommandOperationError_JoinRoom{
+			CommandType: &proto.CommandOperationError_JoinRoom{
 				JoinRoom: cmd.JoinRoom,
 			},
 		}
-	case *gameserver.Command_SendMessage:
-		return &gameserver.CommandOperationError{
+	case *proto.Command_SendMessage:
+		return &proto.CommandOperationError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
-			CommandType: &gameserver.CommandOperationError_SendMessage{
+			CommandType: &proto.CommandOperationError_SendMessage{
 				SendMessage: cmd.SendMessage,
 			},
 		}
 	default:
-		return &gameserver.CommandOperationError{
+		return &proto.CommandOperationError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
 		}

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package quark.gameserver;
+package quark;
 
-option go_package = "quark/gameserver";
+option go_package = "quark/proto";
 
 service Room {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);

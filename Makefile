@@ -18,27 +18,27 @@ $(PROTOC_GEN_GO_GRPC):
 .PHONY: clean
 clean:
 	rm -rf bin
+	rm -f proto/*.pb.go
 	rm -f health/*.pb.go
-	rm -f gameserver/*.pb.go
 
 .PHONY: fmt
 fmt:
 	go fmt $$(go list ./...)
 	clang-format -i proto/**/*.proto
 
-health/health.pb.go: $(PROTOC_GEN_GO)
-	protoc --go_out=.. proto/health/health.proto
+proto/health.pb.go: $(PROTOC_GEN_GO)
+	protoc --go_out=.. proto/health.proto
 
-health/health_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
-	protoc --go-grpc_out=.. proto/health/health.proto
+proto/health_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
+	protoc --go-grpc_out=.. proto/health.proto
 
-gameserver/room.pb.go: $(PROTOC_GEN_GO)
-	protoc --go_out=.. proto/gameserver/room.proto
+proto/room.pb.go: $(PROTOC_GEN_GO)
+	protoc --go_out=.. proto/room.proto
 
-gameserver/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
-	protoc --go-grpc_out=.. proto/gameserver/room.proto
+proto/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
+	protoc --go-grpc_out=.. proto/room.proto
 
-gameserver: gameserver/room.pb.go gameserver/room_grpc.pb.go health/health.pb.go health/health_grpc.pb.go $(wildcard gameserver/**/*.go)
+gameserver: proto/room.pb.go proto/room_grpc.pb.go proto/health.pb.go proto/health_grpc.pb.go $(wildcard gameserver/**/*.go)
 	go build -o bin/$@ ./gameserver/cmd/gameserver
 
 sample_chatclient: gameserver
