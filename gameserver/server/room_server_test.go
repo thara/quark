@@ -207,7 +207,7 @@ func TestRoomServer_Service(t *testing.T) {
 	}
 
 	// c1: send msg 2
-	code, payload = sendMsg()
+	sendMsg()
 
 	// c3: never recv
 	go func() {

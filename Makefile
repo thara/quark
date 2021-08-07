@@ -26,6 +26,11 @@ fmt:
 	go fmt $$(go list ./...)
 	clang-format -i proto/**/*.proto
 
+.PHONY: lint
+lint:
+	go install honnef.co/go/tools/cmd/staticcheck@latest
+	staticcheck $$(go list ./... | grep -v 'proto')
+
 proto/health.pb.go: $(PROTOC_GEN_GO)
 	protoc --go_out=.. proto/health.proto
 

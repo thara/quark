@@ -13,10 +13,6 @@ type Actor struct {
 	quit chan<- interface{}
 }
 
-type actorRoomQuery struct {
-	out chan<- *Room
-}
-
 type Payload struct {
 	Code uint32
 	Body []byte
