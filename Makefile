@@ -31,6 +31,11 @@ lint:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	staticcheck $$(go list ./... | grep -v 'proto')
 
+.PHONY: lint
+test:
+	go clean -testcache ./...
+	go test -cover -race -coverprofile=coverage.out -covermode=atomic -v $$(go list ./...)
+
 proto/health.pb.go: $(PROTOC_GEN_GO)
 	protoc --go_out=.. proto/health.proto
 

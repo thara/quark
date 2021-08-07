@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
 	"quark"
@@ -212,8 +214,9 @@ func TestRoomServer_Service(t *testing.T) {
 
 	// c3: never recv
 	go func() {
-		_, _ = s3.Recv() // blocking
-		t.Fail()
+		_, err = s3.Recv() // blocking
+		require.Error(t, err)
+		assert.Equal(t, codes.DeadlineExceeded, status.Code(err))
 	}()
 
 	<-ctx.Done()

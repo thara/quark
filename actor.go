@@ -16,7 +16,7 @@ type Actor struct {
 	id ActorID
 
 	setEntry chan<- *RoomEntry
-	getEntry chan<- *getActorEntry
+	getEntry chan<- getActorEntry
 
 	quit chan<- interface{}
 }
@@ -34,7 +34,7 @@ func NewActor() *Actor {
 	actorID := NewActorID()
 
 	setEntry := make(chan *RoomEntry)
-	getEntry := make(chan *getActorEntry)
+	getEntry := make(chan getActorEntry)
 	quit := make(chan interface{})
 
 	go func() {
@@ -67,12 +67,14 @@ func (a *Actor) ActorID() ActorID {
 }
 
 func (a *Actor) JoinTo(r *Room) {
-	a.setEntry <- r.NewEntry()
+	e := r.NewEntry()
+	a.setEntry <- e
 }
 
 func (a *Actor) roomEntry() *RoomEntry {
 	out := make(chan *RoomEntry)
-	a.getEntry <- &getActorEntry{out: out}
+	defer close(out)
+	a.getEntry <- getActorEntry{out: out}
 	return <-out
 }
 
