@@ -18,7 +18,7 @@ import (
 
 func TestRoomServer_CreateRoom(t *testing.T) {
 	roomServer := &roomServer{
-		roomList: room.NewRoomList(),
+		roomSet: room.NewRoomSet(),
 	}
 
 	ctx := context.Background()
@@ -37,7 +37,7 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 	require.NotNil(t, resp)
 	assert.Positive(t, resp.RoomID)
 	assert.False(t, resp.AlreadyExist)
-	assert.Len(t, roomServer.roomList.Rooms(), 1)
+	assert.Len(t, roomServer.roomSet.Rooms(), 1)
 
 	roomID := resp.RoomID
 
@@ -49,12 +49,12 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 	require.NotNil(t, resp)
 	assert.Equal(t, roomID, resp.RoomID)
 	assert.True(t, resp.AlreadyExist)
-	assert.Len(t, roomServer.roomList.Rooms(), 1)
+	assert.Len(t, roomServer.roomSet.Rooms(), 1)
 }
 
 func TestRoomServer_Service(t *testing.T) {
 	roomServer := &roomServer{
-		roomList: room.NewRoomList(),
+		roomSet: room.NewRoomSet(),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

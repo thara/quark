@@ -14,12 +14,12 @@ import (
 type roomServer struct {
 	proto.UnimplementedRoomServer
 
-	roomList *room.RoomList
+	roomSet *room.RoomSet
 }
 
 func NewRoomServer() proto.RoomServer {
 	return &roomServer{
-		roomList: room.NewRoomList(),
+		roomSet: room.NewRoomSet(),
 	}
 }
 
@@ -30,7 +30,7 @@ func (s *roomServer) CreateRoom(ctx context.Context, req *proto.CreateRoomReques
 	} else {
 		roomName = req.RoomName
 	}
-	roomID, loaded := s.roomList.NewRoom(roomName)
+	roomID, loaded := s.roomSet.NewRoom(roomName)
 	return &proto.CreateRoomResponse{
 		RoomID:       roomID.Uint64(),
 		AlreadyExist: loaded,
@@ -54,7 +54,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	currentRoom := func() (*room.Room, bool) {
 		id := atomic.LoadUint64(&curRoom)
 		if 0 < id {
-			if r, ok := s.roomList.GetRoom(room.RoomID(id)); ok {
+			if r, ok := s.roomSet.GetRoom(room.RoomID(id)); ok {
 				return r, true
 			}
 		}
@@ -80,7 +80,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 			case *proto.Command_JoinRoom:
 				cmd := c.JoinRoom
 				roomID := room.RoomID(cmd.RoomID)
-				if r, ok := s.roomList.GetRoom(roomID); ok {
+				if r, ok := s.roomSet.GetRoom(roomID); ok {
 					r.Join(subscription)
 					atomic.StoreUint64(&curRoom, roomID.Uint64())
 					joinSucceed <- struct{}{}

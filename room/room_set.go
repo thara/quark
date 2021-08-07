@@ -11,34 +11,34 @@ func (r RoomID) Uint64() uint64 {
 	return uint64(r)
 }
 
-type RoomList struct {
+type RoomSet struct {
 	rooms map[RoomID]*Room
 	names map[string]RoomID
 
 	mux sync.RWMutex
 }
 
-func NewRoomList() *RoomList {
-	return &RoomList{
+func NewRoomSet() *RoomSet {
+	return &RoomSet{
 		rooms: make(map[RoomID]*Room),
 		names: make(map[string]RoomID),
 	}
 }
 
-func (l *RoomList) Rooms() []*Room {
-	s := make([]*Room, len(l.rooms))
-	for _, r := range l.rooms {
-		s = append(s, r)
+func (s *RoomSet) Rooms() []*Room {
+	rs := make([]*Room, len(s.rooms))
+	for _, r := range s.rooms {
+		rs = append(rs, r)
 	}
-	return s
+	return rs
 }
 
-func (l *RoomList) NewRoom(name string) (RoomID, bool) {
+func (s *RoomSet) NewRoom(name string) (RoomID, bool) {
 	id, exists := func() (RoomID, bool) {
-		l.mux.RLock()
-		defer l.mux.RUnlock()
+		s.mux.RLock()
+		defer s.mux.RUnlock()
 
-		if id, ok := l.names[name]; ok {
+		if id, ok := s.names[name]; ok {
 			return id, true
 		} else {
 			return RoomID(0), false
@@ -52,20 +52,20 @@ func (l *RoomList) NewRoom(name string) (RoomID, bool) {
 	room := NewRoom()
 
 	func() {
-		l.mux.Lock()
-		defer l.mux.Unlock()
-		l.rooms[newID] = room
-		l.names[name] = newID
+		s.mux.Lock()
+		defer s.mux.Unlock()
+		s.rooms[newID] = room
+		s.names[name] = newID
 	}()
 
 	return newID, false
 }
 
-func (l *RoomList) GetRoom(id RoomID) (*Room, bool) {
-	l.mux.RLock()
-	defer l.mux.RUnlock()
+func (s *RoomSet) GetRoom(id RoomID) (*Room, bool) {
+	s.mux.RLock()
+	defer s.mux.RUnlock()
 
-	if r, ok := l.rooms[id]; ok {
+	if r, ok := s.rooms[id]; ok {
 		return r, true
 	} else {
 		return nil, false
