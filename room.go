@@ -1,6 +1,8 @@
 package quark
 
-type Message struct {
+type Message interface{}
+
+type ActorMessage struct {
 	Sender  ActorID
 	Code    uint32
 	Payload []byte
@@ -9,39 +11,41 @@ type Message struct {
 type subscription chan<- Message
 
 type RoomEntry struct {
-	r *Room
-	s chan Message
+	id ActorID
+	r  *Room
+	s  chan Message
 }
 
 func (e *RoomEntry) Subscription() <-chan Message {
 	return e.s
 }
 
-func (e *RoomEntry) Send(m Message) {
+func (e *RoomEntry) Send(m ActorMessage) {
 	e.r.messages <- m
 }
 
 func (e *RoomEntry) Leave() {
-	e.r.leave <- e.s
+	e.r.leave <- e.id
 }
 
 type Room struct {
 	join     chan<- roomJoinCmd
-	leave    chan<- subscription
-	messages chan<- Message
+	leave    chan<- ActorID
+	messages chan<- ActorMessage
 
 	done chan<- interface{}
 }
 
 type roomJoinCmd struct {
-	out chan<- (chan Message)
+	actorID ActorID
+	out     chan<- (chan Message)
 }
 
 func NewRoom() *Room {
-	messages := make(chan Message, 16)
+	messages := make(chan ActorMessage, 16)
 
 	join := make(chan roomJoinCmd)
-	leave := make(chan subscription)
+	leave := make(chan ActorID)
 
 	done := make(chan interface{})
 
@@ -51,21 +55,41 @@ func NewRoom() *Room {
 		defer close(messages)
 		defer close(done)
 
-		subscribers := map[subscription]bool{}
+		subscribers := map[ActorID]subscription{}
+
+		currentActors := func() []ActorID {
+			s := make([]ActorID, 0, len(subscribers))
+			for id := range subscribers {
+				s = append(s, id)
+			}
+			return s
+		}
 
 		for {
 			select {
 			case <-done:
 				return
 			case cmd := <-join:
-				s := make(chan Message)
-				subscribers[s] = true
+				s := make(chan Message, 128)
+				subscribers[cmd.actorID] = s
 				cmd.out <- s
-			case s := <-leave:
-				delete(subscribers, s)
-				close(s)
+
+				ev := JoinRoomEvent{
+					ActorList: currentActors(),
+					NewActor:  cmd.actorID,
+				}
+				for id, other := range subscribers {
+					if id != cmd.actorID {
+						other <- ev
+					}
+				}
+			case id := <-leave:
+				if s, ok := subscribers[id]; ok {
+					delete(subscribers, id)
+					close(s)
+				}
 			case m := <-messages:
-				for s := range subscribers {
+				for _, s := range subscribers {
 					s <- m
 				}
 			}
@@ -77,19 +101,11 @@ func NewRoom() *Room {
 	}
 }
 
-func (r *Room) NewEntry() *RoomEntry {
+func (r *Room) NewEntry(actorID ActorID) *RoomEntry {
 	out := make(chan (chan Message))
 	defer close(out)
-	r.join <- roomJoinCmd{out: out}
-	return &RoomEntry{r: r, s: <-out}
-}
-
-func (r *Room) Leave(e *RoomEntry) {
-	r.leave <- e.s
-}
-
-func (r *Room) Send(m Message) {
-	r.messages <- m
+	r.join <- roomJoinCmd{actorID: actorID, out: out}
+	return &RoomEntry{id: actorID, r: r, s: <-out}
 }
 
 func (r *Room) Stop() {

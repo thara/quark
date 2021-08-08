@@ -42,7 +42,7 @@ func (a *Actor) ActorID() ActorID {
 }
 
 func (a *Actor) JoinTo(r *Room) {
-	e := r.NewEntry()
+	e := r.NewEntry(a.id)
 
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -73,7 +73,7 @@ func (a *Actor) BroadcastToRoom(p Payload) bool {
 	if e == nil {
 		return false
 	}
-	e.Send(Message{
+	e.Send(ActorMessage{
 		Sender:  a.id,
 		Code:    p.Code,
 		Payload: p.Body,
@@ -95,6 +95,6 @@ func (a *Actor) InRoom() bool {
 	return a.roomEntry() != nil
 }
 
-func (a *Actor) IsOwnMessage(m *Message) bool {
+func (a *Actor) IsOwnMessage(m *ActorMessage) bool {
 	return m.Sender == a.ActorID()
 }

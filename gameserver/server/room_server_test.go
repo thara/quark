@@ -128,6 +128,14 @@ func TestRoomServer_Service(t *testing.T) {
 
 		assert.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoomSuccess{})
 	}
+	{
+		m, err := s1.Recv()
+		require.NoError(t, err)
+		require.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoom{})
+
+		ev := m.Event.(*proto.ServerMessage_OnJoinRoom)
+		assert.Len(t, ev.OnJoinRoom.ActorIDList, 2)
+	}
 	// c3: join
 	{
 		err := s3.Send(&proto.ClientMessage{
@@ -143,6 +151,22 @@ func TestRoomServer_Service(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoomSuccess{})
+	}
+	{
+		m, err := s1.Recv()
+		require.NoError(t, err)
+		require.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoom{})
+
+		ev := m.Event.(*proto.ServerMessage_OnJoinRoom)
+		assert.Len(t, ev.OnJoinRoom.ActorIDList, 3)
+	}
+	{
+		m, err := s2.Recv()
+		require.NoError(t, err)
+		require.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoom{})
+
+		ev := m.Event.(*proto.ServerMessage_OnJoinRoom)
+		assert.Len(t, ev.OnJoinRoom.ActorIDList, 3)
 	}
 
 	// c1: send msg

@@ -120,24 +120,45 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				if !ok {
 					continue
 				}
-				if actor.IsOwnMessage(&m) {
-					// skip send
-					continue
-				}
-				msg := proto.ServerMessage{
-					Event: &proto.ServerMessage_OnMessageReceived{
-						OnMessageReceived: &proto.ServerMessage_ReceivedMessageEvent{
-							SenderID: m.Sender.String(),
-							Message: &proto.Message{
-								Code:    m.Code,
-								Payload: m.Payload,
+
+				switch m := m.(type) {
+				case quark.ActorMessage:
+					if actor.IsOwnMessage(&m) {
+						// skip send
+						continue
+					}
+					msg := proto.ServerMessage{
+						Event: &proto.ServerMessage_OnMessageReceived{
+							OnMessageReceived: &proto.ServerMessage_ReceivedMessageEvent{
+								SenderID: m.Sender.String(),
+								Message: &proto.Message{
+									Code:    m.Code,
+									Payload: m.Payload,
+								},
 							},
 						},
-					},
+					}
+					if err := stream.Send(&msg); err != nil {
+						fail <- err
+					}
+				case quark.JoinRoomEvent:
+					ids := make([]string, len(m.ActorList))
+					for i, a := range m.ActorList {
+						ids[i] = a.String()
+					}
+					msg := proto.ServerMessage{
+						Event: &proto.ServerMessage_OnJoinRoom{
+							OnJoinRoom: &proto.ServerMessage_JoinRoom{
+								ActorIDList: ids,
+								NewActorID:  m.NewActor.String(),
+							},
+						},
+					}
+					if err := stream.Send(&msg); err != nil {
+						fail <- err
+					}
 				}
-				if err := stream.Send(&msg); err != nil {
-					fail <- err
-				}
+
 			}
 		}
 	}()

@@ -41,6 +41,7 @@ message ServerMessage {
     LeaveRoomSuccess onLeaveRoomSuccess = 3;
 
     ReceivedMessageEvent onMessageReceived = 4;
+    JoinRoom onJoinRoom = 5;
   }
 
   message CommandError {
@@ -60,5 +61,9 @@ message ServerMessage {
   message ReceivedMessageEvent {
     Message message = 1;
     string senderID = 2;
+  }
+  message JoinRoom {
+    repeated string actorIDList = 1;
+    string newActorID = 2;
   }
 }

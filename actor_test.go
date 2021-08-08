@@ -44,7 +44,22 @@ func TestActor_BroadcastToRoom(t *testing.T) {
 
 	a1.JoinTo(r)
 	a2.JoinTo(r)
+	{
+		m := <-a1.Inbox()
+		require.IsType(t, m, JoinRoomEvent{})
+		assert.Len(t, m.(JoinRoomEvent).ActorList, 2)
+	}
 	a3.JoinTo(r)
+	{
+		m := <-a1.Inbox()
+		require.IsType(t, m, JoinRoomEvent{})
+		assert.Len(t, m.(JoinRoomEvent).ActorList, 3)
+	}
+	{
+		m := <-a2.Inbox()
+		require.IsType(t, m, JoinRoomEvent{})
+		assert.Len(t, m.(JoinRoomEvent).ActorList, 3)
+	}
 
 	body := make([]byte, 1024)
 	rand.Read(body)
@@ -58,19 +73,25 @@ L:
 			t.Fatal(ctx.Err())
 			return
 		case m := <-a1.Inbox():
-			assert.Equal(t, a3.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x01, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a3.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x01, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		case m := <-a2.Inbox():
-			assert.Equal(t, a3.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x01, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a3.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x01, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		case m := <-a3.Inbox():
-			assert.Equal(t, a3.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x01, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a3.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x01, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		default:
 			if n == 3 {
@@ -93,14 +114,18 @@ M:
 			t.Fatal(ctx.Err())
 			return
 		case m := <-a1.Inbox():
-			assert.Equal(t, a3.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x02, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a3.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x02, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		case m := <-a3.Inbox():
-			assert.Equal(t, a3.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x02, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a3.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x02, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		default:
 			if n >= 2 {
@@ -111,6 +136,16 @@ M:
 
 	a4 := NewActor()
 	a4.JoinTo(r)
+	{
+		m := <-a1.Inbox()
+		require.IsType(t, m, JoinRoomEvent{})
+		assert.Len(t, m.(JoinRoomEvent).ActorList, 3)
+	}
+	{
+		m := <-a3.Inbox()
+		require.IsType(t, m, JoinRoomEvent{})
+		assert.Len(t, m.(JoinRoomEvent).ActorList, 3)
+	}
 
 	body = make([]byte, 1024)
 	rand.Read(body)
@@ -124,19 +159,25 @@ N:
 			t.Fatal(ctx.Err())
 			return
 		case m := <-a1.Inbox():
-			assert.Equal(t, a4.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x03, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a4.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x03, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		case m := <-a3.Inbox():
-			assert.Equal(t, a4.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x03, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a4.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x03, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		case m := <-a4.Inbox():
-			assert.Equal(t, a4.ActorID(), m.Sender)
-			assert.EqualValues(t, 0x03, m.Code)
-			assert.Equal(t, body, m.Payload)
+			require.IsType(t, m, ActorMessage{})
+			am := m.(ActorMessage)
+			assert.Equal(t, a4.ActorID(), am.Sender)
+			assert.EqualValues(t, 0x03, am.Code)
+			assert.Equal(t, body, am.Payload)
 			n += 1
 		default:
 			if n == 3 {
