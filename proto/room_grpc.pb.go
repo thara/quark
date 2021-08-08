@@ -49,8 +49,8 @@ func (c *roomClient) Service(ctx context.Context, opts ...grpc.CallOption) (Room
 }
 
 type Room_ServiceClient interface {
-	Send(*Command) error
-	Recv() (*Event, error)
+	Send(*ClientMessage) error
+	Recv() (*ServerMessage, error)
 	grpc.ClientStream
 }
 
@@ -58,12 +58,12 @@ type roomServiceClient struct {
 	grpc.ClientStream
 }
 
-func (x *roomServiceClient) Send(m *Command) error {
+func (x *roomServiceClient) Send(m *ClientMessage) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *roomServiceClient) Recv() (*Event, error) {
-	m := new(Event)
+func (x *roomServiceClient) Recv() (*ServerMessage, error) {
+	m := new(ServerMessage)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -125,8 +125,8 @@ func _Room_Service_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Room_ServiceServer interface {
-	Send(*Event) error
-	Recv() (*Command, error)
+	Send(*ServerMessage) error
+	Recv() (*ClientMessage, error)
 	grpc.ServerStream
 }
 
@@ -134,12 +134,12 @@ type roomServiceServer struct {
 	grpc.ServerStream
 }
 
-func (x *roomServiceServer) Send(m *Event) error {
+func (x *roomServiceServer) Send(m *ServerMessage) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *roomServiceServer) Recv() (*Command, error) {
-	m := new(Command)
+func (x *roomServiceServer) Recv() (*ClientMessage, error) {
+	m := new(ClientMessage)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

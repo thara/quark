@@ -122,20 +122,20 @@ func (x *CreateRoomResponse) GetAlreadyExist() bool {
 	return false
 }
 
-type Command struct {
+type ClientMessage struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to CommandType:
-	//	*Command_JoinRoom
-	//	*Command_SendMessage
-	//	*Command_LeaveRoom
-	CommandType isCommand_CommandType `protobuf_oneof:"commandType"`
+	// Types that are assignable to Command:
+	//	*ClientMessage_JoinRoom
+	//	*ClientMessage_SendMessage
+	//	*ClientMessage_LeaveRoom
+	Command isClientMessage_Command `protobuf_oneof:"command"`
 }
 
-func (x *Command) Reset() {
-	*x = Command{}
+func (x *ClientMessage) Reset() {
+	*x = ClientMessage{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_room_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -143,13 +143,13 @@ func (x *Command) Reset() {
 	}
 }
 
-func (x *Command) String() string {
+func (x *ClientMessage) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Command) ProtoMessage() {}
+func (*ClientMessage) ProtoMessage() {}
 
-func (x *Command) ProtoReflect() protoreflect.Message {
+func (x *ClientMessage) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_room_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -161,550 +161,60 @@ func (x *Command) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Command.ProtoReflect.Descriptor instead.
-func (*Command) Descriptor() ([]byte, []int) {
+// Deprecated: Use ClientMessage.ProtoReflect.Descriptor instead.
+func (*ClientMessage) Descriptor() ([]byte, []int) {
 	return file_proto_room_proto_rawDescGZIP(), []int{2}
 }
 
-func (m *Command) GetCommandType() isCommand_CommandType {
+func (m *ClientMessage) GetCommand() isClientMessage_Command {
 	if m != nil {
-		return m.CommandType
+		return m.Command
 	}
 	return nil
 }
 
-func (x *Command) GetJoinRoom() *JoinRoom {
-	if x, ok := x.GetCommandType().(*Command_JoinRoom); ok {
+func (x *ClientMessage) GetJoinRoom() *ClientMessage_JoinRoomCommand {
+	if x, ok := x.GetCommand().(*ClientMessage_JoinRoom); ok {
 		return x.JoinRoom
 	}
 	return nil
 }
 
-func (x *Command) GetSendMessage() *SendMessage {
-	if x, ok := x.GetCommandType().(*Command_SendMessage); ok {
+func (x *ClientMessage) GetSendMessage() *ClientMessage_SendMessageCommand {
+	if x, ok := x.GetCommand().(*ClientMessage_SendMessage); ok {
 		return x.SendMessage
 	}
 	return nil
 }
 
-func (x *Command) GetLeaveRoom() *LeaveRoom {
-	if x, ok := x.GetCommandType().(*Command_LeaveRoom); ok {
+func (x *ClientMessage) GetLeaveRoom() *ClientMessage_LeaveRoomCommand {
+	if x, ok := x.GetCommand().(*ClientMessage_LeaveRoom); ok {
 		return x.LeaveRoom
 	}
 	return nil
 }
 
-type isCommand_CommandType interface {
-	isCommand_CommandType()
+type isClientMessage_Command interface {
+	isClientMessage_Command()
 }
 
-type Command_JoinRoom struct {
-	JoinRoom *JoinRoom `protobuf:"bytes,1,opt,name=joinRoom,proto3,oneof"`
+type ClientMessage_JoinRoom struct {
+	JoinRoom *ClientMessage_JoinRoomCommand `protobuf:"bytes,1,opt,name=joinRoom,proto3,oneof"`
 }
 
-type Command_SendMessage struct {
-	SendMessage *SendMessage `protobuf:"bytes,2,opt,name=sendMessage,proto3,oneof"`
+type ClientMessage_SendMessage struct {
+	SendMessage *ClientMessage_SendMessageCommand `protobuf:"bytes,2,opt,name=sendMessage,proto3,oneof"`
 }
 
-type Command_LeaveRoom struct {
-	LeaveRoom *LeaveRoom `protobuf:"bytes,3,opt,name=leaveRoom,proto3,oneof"`
+type ClientMessage_LeaveRoom struct {
+	LeaveRoom *ClientMessage_LeaveRoomCommand `protobuf:"bytes,3,opt,name=leaveRoom,proto3,oneof"`
 }
 
-func (*Command_JoinRoom) isCommand_CommandType() {}
+func (*ClientMessage_JoinRoom) isClientMessage_Command() {}
 
-func (*Command_SendMessage) isCommand_CommandType() {}
+func (*ClientMessage_SendMessage) isClientMessage_Command() {}
 
-func (*Command_LeaveRoom) isCommand_CommandType() {}
-
-type JoinRoom struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	RoomID uint64 `protobuf:"varint,1,opt,name=roomID,proto3" json:"roomID,omitempty"`
-}
-
-func (x *JoinRoom) Reset() {
-	*x = JoinRoom{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *JoinRoom) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*JoinRoom) ProtoMessage() {}
-
-func (x *JoinRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use JoinRoom.ProtoReflect.Descriptor instead.
-func (*JoinRoom) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *JoinRoom) GetRoomID() uint64 {
-	if x != nil {
-		return x.RoomID
-	}
-	return 0
-}
-
-type SendMessage struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Message *Message `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-}
-
-func (x *SendMessage) Reset() {
-	*x = SendMessage{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SendMessage) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendMessage) ProtoMessage() {}
-
-func (x *SendMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendMessage.ProtoReflect.Descriptor instead.
-func (*SendMessage) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *SendMessage) GetMessage() *Message {
-	if x != nil {
-		return x.Message
-	}
-	return nil
-}
-
-type LeaveRoom struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *LeaveRoom) Reset() {
-	*x = LeaveRoom{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *LeaveRoom) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LeaveRoom) ProtoMessage() {}
-
-func (x *LeaveRoom) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LeaveRoom.ProtoReflect.Descriptor instead.
-func (*LeaveRoom) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{5}
-}
-
-type Event struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to EventType:
-	//	*Event_CommandOperationError
-	//	*Event_JoinRoomSucceed
-	//	*Event_LeaveRoomSucceed
-	//	*Event_MessageReceived
-	EventType isEvent_EventType `protobuf_oneof:"eventType"`
-}
-
-func (x *Event) Reset() {
-	*x = Event{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Event) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Event) ProtoMessage() {}
-
-func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Event.ProtoReflect.Descriptor instead.
-func (*Event) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{6}
-}
-
-func (m *Event) GetEventType() isEvent_EventType {
-	if m != nil {
-		return m.EventType
-	}
-	return nil
-}
-
-func (x *Event) GetCommandOperationError() *CommandOperationError {
-	if x, ok := x.GetEventType().(*Event_CommandOperationError); ok {
-		return x.CommandOperationError
-	}
-	return nil
-}
-
-func (x *Event) GetJoinRoomSucceed() *JoinRoomSucceed {
-	if x, ok := x.GetEventType().(*Event_JoinRoomSucceed); ok {
-		return x.JoinRoomSucceed
-	}
-	return nil
-}
-
-func (x *Event) GetLeaveRoomSucceed() *LeaveRoomSucceed {
-	if x, ok := x.GetEventType().(*Event_LeaveRoomSucceed); ok {
-		return x.LeaveRoomSucceed
-	}
-	return nil
-}
-
-func (x *Event) GetMessageReceived() *MessageReceived {
-	if x, ok := x.GetEventType().(*Event_MessageReceived); ok {
-		return x.MessageReceived
-	}
-	return nil
-}
-
-type isEvent_EventType interface {
-	isEvent_EventType()
-}
-
-type Event_CommandOperationError struct {
-	CommandOperationError *CommandOperationError `protobuf:"bytes,1,opt,name=commandOperationError,proto3,oneof"`
-}
-
-type Event_JoinRoomSucceed struct {
-	JoinRoomSucceed *JoinRoomSucceed `protobuf:"bytes,2,opt,name=joinRoomSucceed,proto3,oneof"`
-}
-
-type Event_LeaveRoomSucceed struct {
-	LeaveRoomSucceed *LeaveRoomSucceed `protobuf:"bytes,3,opt,name=leaveRoomSucceed,proto3,oneof"`
-}
-
-type Event_MessageReceived struct {
-	MessageReceived *MessageReceived `protobuf:"bytes,4,opt,name=messageReceived,proto3,oneof"`
-}
-
-func (*Event_CommandOperationError) isEvent_EventType() {}
-
-func (*Event_JoinRoomSucceed) isEvent_EventType() {}
-
-func (*Event_LeaveRoomSucceed) isEvent_EventType() {}
-
-func (*Event_MessageReceived) isEvent_EventType() {}
-
-type JoinRoomSucceed struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ActorID string `protobuf:"bytes,1,opt,name=actorID,proto3" json:"actorID,omitempty"`
-}
-
-func (x *JoinRoomSucceed) Reset() {
-	*x = JoinRoomSucceed{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *JoinRoomSucceed) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*JoinRoomSucceed) ProtoMessage() {}
-
-func (x *JoinRoomSucceed) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use JoinRoomSucceed.ProtoReflect.Descriptor instead.
-func (*JoinRoomSucceed) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *JoinRoomSucceed) GetActorID() string {
-	if x != nil {
-		return x.ActorID
-	}
-	return ""
-}
-
-type LeaveRoomSucceed struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *LeaveRoomSucceed) Reset() {
-	*x = LeaveRoomSucceed{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[8]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *LeaveRoomSucceed) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LeaveRoomSucceed) ProtoMessage() {}
-
-func (x *LeaveRoomSucceed) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[8]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LeaveRoomSucceed.ProtoReflect.Descriptor instead.
-func (*LeaveRoomSucceed) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{8}
-}
-
-type MessageReceived struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Message  *Message `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	SenderID string   `protobuf:"bytes,2,opt,name=senderID,proto3" json:"senderID,omitempty"`
-}
-
-func (x *MessageReceived) Reset() {
-	*x = MessageReceived{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[9]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MessageReceived) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MessageReceived) ProtoMessage() {}
-
-func (x *MessageReceived) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[9]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MessageReceived.ProtoReflect.Descriptor instead.
-func (*MessageReceived) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *MessageReceived) GetMessage() *Message {
-	if x != nil {
-		return x.Message
-	}
-	return nil
-}
-
-func (x *MessageReceived) GetSenderID() string {
-	if x != nil {
-		return x.SenderID
-	}
-	return ""
-}
-
-type CommandOperationError struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ErrorCode   string `protobuf:"bytes,1,opt,name=errorCode,proto3" json:"errorCode,omitempty"`
-	ErrorDetail string `protobuf:"bytes,2,opt,name=errorDetail,proto3" json:"errorDetail,omitempty"`
-	// Types that are assignable to CommandType:
-	//	*CommandOperationError_JoinRoom
-	//	*CommandOperationError_SendMessage
-	//	*CommandOperationError_LeaveRoom
-	CommandType isCommandOperationError_CommandType `protobuf_oneof:"commandType"`
-}
-
-func (x *CommandOperationError) Reset() {
-	*x = CommandOperationError{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CommandOperationError) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CommandOperationError) ProtoMessage() {}
-
-func (x *CommandOperationError) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CommandOperationError.ProtoReflect.Descriptor instead.
-func (*CommandOperationError) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *CommandOperationError) GetErrorCode() string {
-	if x != nil {
-		return x.ErrorCode
-	}
-	return ""
-}
-
-func (x *CommandOperationError) GetErrorDetail() string {
-	if x != nil {
-		return x.ErrorDetail
-	}
-	return ""
-}
-
-func (m *CommandOperationError) GetCommandType() isCommandOperationError_CommandType {
-	if m != nil {
-		return m.CommandType
-	}
-	return nil
-}
-
-func (x *CommandOperationError) GetJoinRoom() *JoinRoom {
-	if x, ok := x.GetCommandType().(*CommandOperationError_JoinRoom); ok {
-		return x.JoinRoom
-	}
-	return nil
-}
-
-func (x *CommandOperationError) GetSendMessage() *SendMessage {
-	if x, ok := x.GetCommandType().(*CommandOperationError_SendMessage); ok {
-		return x.SendMessage
-	}
-	return nil
-}
-
-func (x *CommandOperationError) GetLeaveRoom() *LeaveRoom {
-	if x, ok := x.GetCommandType().(*CommandOperationError_LeaveRoom); ok {
-		return x.LeaveRoom
-	}
-	return nil
-}
-
-type isCommandOperationError_CommandType interface {
-	isCommandOperationError_CommandType()
-}
-
-type CommandOperationError_JoinRoom struct {
-	JoinRoom *JoinRoom `protobuf:"bytes,3,opt,name=joinRoom,proto3,oneof"`
-}
-
-type CommandOperationError_SendMessage struct {
-	SendMessage *SendMessage `protobuf:"bytes,4,opt,name=sendMessage,proto3,oneof"`
-}
-
-type CommandOperationError_LeaveRoom struct {
-	LeaveRoom *LeaveRoom `protobuf:"bytes,5,opt,name=leaveRoom,proto3,oneof"`
-}
-
-func (*CommandOperationError_JoinRoom) isCommandOperationError_CommandType() {}
-
-func (*CommandOperationError_SendMessage) isCommandOperationError_CommandType() {}
-
-func (*CommandOperationError_LeaveRoom) isCommandOperationError_CommandType() {}
+func (*ClientMessage_LeaveRoom) isClientMessage_Command() {}
 
 type Message struct {
 	state         protoimpl.MessageState
@@ -718,7 +228,7 @@ type Message struct {
 func (x *Message) Reset() {
 	*x = Message{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_room_proto_msgTypes[11]
+		mi := &file_proto_room_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -731,7 +241,7 @@ func (x *Message) String() string {
 func (*Message) ProtoMessage() {}
 
 func (x *Message) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_room_proto_msgTypes[11]
+	mi := &file_proto_room_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -744,7 +254,7 @@ func (x *Message) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Message.ProtoReflect.Descriptor instead.
 func (*Message) Descriptor() ([]byte, []int) {
-	return file_proto_room_proto_rawDescGZIP(), []int{11}
+	return file_proto_room_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Message) GetCode() uint32 {
@@ -761,6 +271,496 @@ func (x *Message) GetPayload() []byte {
 	return nil
 }
 
+type ServerMessage struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Event:
+	//	*ServerMessage_OnCommandFailed
+	//	*ServerMessage_OnJoinRoomSuccess
+	//	*ServerMessage_OnLeaveRoomSuccess
+	//	*ServerMessage_OnMessageReceived
+	Event isServerMessage_Event `protobuf_oneof:"event"`
+}
+
+func (x *ServerMessage) Reset() {
+	*x = ServerMessage{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerMessage) ProtoMessage() {}
+
+func (x *ServerMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerMessage.ProtoReflect.Descriptor instead.
+func (*ServerMessage) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{4}
+}
+
+func (m *ServerMessage) GetEvent() isServerMessage_Event {
+	if m != nil {
+		return m.Event
+	}
+	return nil
+}
+
+func (x *ServerMessage) GetOnCommandFailed() *ServerMessage_CommandError {
+	if x, ok := x.GetEvent().(*ServerMessage_OnCommandFailed); ok {
+		return x.OnCommandFailed
+	}
+	return nil
+}
+
+func (x *ServerMessage) GetOnJoinRoomSuccess() *ServerMessage_JoinRoomSuccess {
+	if x, ok := x.GetEvent().(*ServerMessage_OnJoinRoomSuccess); ok {
+		return x.OnJoinRoomSuccess
+	}
+	return nil
+}
+
+func (x *ServerMessage) GetOnLeaveRoomSuccess() *ServerMessage_LeaveRoomSuccess {
+	if x, ok := x.GetEvent().(*ServerMessage_OnLeaveRoomSuccess); ok {
+		return x.OnLeaveRoomSuccess
+	}
+	return nil
+}
+
+func (x *ServerMessage) GetOnMessageReceived() *ServerMessage_ReceivedMessageEvent {
+	if x, ok := x.GetEvent().(*ServerMessage_OnMessageReceived); ok {
+		return x.OnMessageReceived
+	}
+	return nil
+}
+
+type isServerMessage_Event interface {
+	isServerMessage_Event()
+}
+
+type ServerMessage_OnCommandFailed struct {
+	OnCommandFailed *ServerMessage_CommandError `protobuf:"bytes,1,opt,name=onCommandFailed,proto3,oneof"`
+}
+
+type ServerMessage_OnJoinRoomSuccess struct {
+	OnJoinRoomSuccess *ServerMessage_JoinRoomSuccess `protobuf:"bytes,2,opt,name=onJoinRoomSuccess,proto3,oneof"`
+}
+
+type ServerMessage_OnLeaveRoomSuccess struct {
+	OnLeaveRoomSuccess *ServerMessage_LeaveRoomSuccess `protobuf:"bytes,3,opt,name=onLeaveRoomSuccess,proto3,oneof"`
+}
+
+type ServerMessage_OnMessageReceived struct {
+	OnMessageReceived *ServerMessage_ReceivedMessageEvent `protobuf:"bytes,4,opt,name=onMessageReceived,proto3,oneof"`
+}
+
+func (*ServerMessage_OnCommandFailed) isServerMessage_Event() {}
+
+func (*ServerMessage_OnJoinRoomSuccess) isServerMessage_Event() {}
+
+func (*ServerMessage_OnLeaveRoomSuccess) isServerMessage_Event() {}
+
+func (*ServerMessage_OnMessageReceived) isServerMessage_Event() {}
+
+type ClientMessage_JoinRoomCommand struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	RoomID uint64 `protobuf:"varint,1,opt,name=roomID,proto3" json:"roomID,omitempty"`
+}
+
+func (x *ClientMessage_JoinRoomCommand) Reset() {
+	*x = ClientMessage_JoinRoomCommand{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ClientMessage_JoinRoomCommand) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClientMessage_JoinRoomCommand) ProtoMessage() {}
+
+func (x *ClientMessage_JoinRoomCommand) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClientMessage_JoinRoomCommand.ProtoReflect.Descriptor instead.
+func (*ClientMessage_JoinRoomCommand) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{2, 0}
+}
+
+func (x *ClientMessage_JoinRoomCommand) GetRoomID() uint64 {
+	if x != nil {
+		return x.RoomID
+	}
+	return 0
+}
+
+type ClientMessage_SendMessageCommand struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Message *Message `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *ClientMessage_SendMessageCommand) Reset() {
+	*x = ClientMessage_SendMessageCommand{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ClientMessage_SendMessageCommand) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClientMessage_SendMessageCommand) ProtoMessage() {}
+
+func (x *ClientMessage_SendMessageCommand) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClientMessage_SendMessageCommand.ProtoReflect.Descriptor instead.
+func (*ClientMessage_SendMessageCommand) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{2, 1}
+}
+
+func (x *ClientMessage_SendMessageCommand) GetMessage() *Message {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+type ClientMessage_LeaveRoomCommand struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ClientMessage_LeaveRoomCommand) Reset() {
+	*x = ClientMessage_LeaveRoomCommand{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ClientMessage_LeaveRoomCommand) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClientMessage_LeaveRoomCommand) ProtoMessage() {}
+
+func (x *ClientMessage_LeaveRoomCommand) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClientMessage_LeaveRoomCommand.ProtoReflect.Descriptor instead.
+func (*ClientMessage_LeaveRoomCommand) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{2, 2}
+}
+
+type ServerMessage_CommandError struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ErrorCode   string `protobuf:"bytes,1,opt,name=errorCode,proto3" json:"errorCode,omitempty"`
+	ErrorDetail string `protobuf:"bytes,2,opt,name=errorDetail,proto3" json:"errorDetail,omitempty"`
+	// Types that are assignable to ErrorCommand:
+	//	*ServerMessage_CommandError_JoinRoom
+	//	*ServerMessage_CommandError_SendMessage
+	//	*ServerMessage_CommandError_LeaveRoom
+	ErrorCommand isServerMessage_CommandError_ErrorCommand `protobuf_oneof:"errorCommand"`
+}
+
+func (x *ServerMessage_CommandError) Reset() {
+	*x = ServerMessage_CommandError{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerMessage_CommandError) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerMessage_CommandError) ProtoMessage() {}
+
+func (x *ServerMessage_CommandError) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerMessage_CommandError.ProtoReflect.Descriptor instead.
+func (*ServerMessage_CommandError) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{4, 0}
+}
+
+func (x *ServerMessage_CommandError) GetErrorCode() string {
+	if x != nil {
+		return x.ErrorCode
+	}
+	return ""
+}
+
+func (x *ServerMessage_CommandError) GetErrorDetail() string {
+	if x != nil {
+		return x.ErrorDetail
+	}
+	return ""
+}
+
+func (m *ServerMessage_CommandError) GetErrorCommand() isServerMessage_CommandError_ErrorCommand {
+	if m != nil {
+		return m.ErrorCommand
+	}
+	return nil
+}
+
+func (x *ServerMessage_CommandError) GetJoinRoom() *ClientMessage_JoinRoomCommand {
+	if x, ok := x.GetErrorCommand().(*ServerMessage_CommandError_JoinRoom); ok {
+		return x.JoinRoom
+	}
+	return nil
+}
+
+func (x *ServerMessage_CommandError) GetSendMessage() *ClientMessage_SendMessageCommand {
+	if x, ok := x.GetErrorCommand().(*ServerMessage_CommandError_SendMessage); ok {
+		return x.SendMessage
+	}
+	return nil
+}
+
+func (x *ServerMessage_CommandError) GetLeaveRoom() *ClientMessage_LeaveRoomCommand {
+	if x, ok := x.GetErrorCommand().(*ServerMessage_CommandError_LeaveRoom); ok {
+		return x.LeaveRoom
+	}
+	return nil
+}
+
+type isServerMessage_CommandError_ErrorCommand interface {
+	isServerMessage_CommandError_ErrorCommand()
+}
+
+type ServerMessage_CommandError_JoinRoom struct {
+	JoinRoom *ClientMessage_JoinRoomCommand `protobuf:"bytes,3,opt,name=joinRoom,proto3,oneof"`
+}
+
+type ServerMessage_CommandError_SendMessage struct {
+	SendMessage *ClientMessage_SendMessageCommand `protobuf:"bytes,4,opt,name=sendMessage,proto3,oneof"`
+}
+
+type ServerMessage_CommandError_LeaveRoom struct {
+	LeaveRoom *ClientMessage_LeaveRoomCommand `protobuf:"bytes,5,opt,name=leaveRoom,proto3,oneof"`
+}
+
+func (*ServerMessage_CommandError_JoinRoom) isServerMessage_CommandError_ErrorCommand() {}
+
+func (*ServerMessage_CommandError_SendMessage) isServerMessage_CommandError_ErrorCommand() {}
+
+func (*ServerMessage_CommandError_LeaveRoom) isServerMessage_CommandError_ErrorCommand() {}
+
+type ServerMessage_JoinRoomSuccess struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ActorID string `protobuf:"bytes,1,opt,name=actorID,proto3" json:"actorID,omitempty"`
+}
+
+func (x *ServerMessage_JoinRoomSuccess) Reset() {
+	*x = ServerMessage_JoinRoomSuccess{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerMessage_JoinRoomSuccess) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerMessage_JoinRoomSuccess) ProtoMessage() {}
+
+func (x *ServerMessage_JoinRoomSuccess) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerMessage_JoinRoomSuccess.ProtoReflect.Descriptor instead.
+func (*ServerMessage_JoinRoomSuccess) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{4, 1}
+}
+
+func (x *ServerMessage_JoinRoomSuccess) GetActorID() string {
+	if x != nil {
+		return x.ActorID
+	}
+	return ""
+}
+
+type ServerMessage_LeaveRoomSuccess struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ServerMessage_LeaveRoomSuccess) Reset() {
+	*x = ServerMessage_LeaveRoomSuccess{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerMessage_LeaveRoomSuccess) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerMessage_LeaveRoomSuccess) ProtoMessage() {}
+
+func (x *ServerMessage_LeaveRoomSuccess) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerMessage_LeaveRoomSuccess.ProtoReflect.Descriptor instead.
+func (*ServerMessage_LeaveRoomSuccess) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{4, 2}
+}
+
+type ServerMessage_ReceivedMessageEvent struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Message  *Message `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	SenderID string   `protobuf:"bytes,2,opt,name=senderID,proto3" json:"senderID,omitempty"`
+}
+
+func (x *ServerMessage_ReceivedMessageEvent) Reset() {
+	*x = ServerMessage_ReceivedMessageEvent{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_room_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ServerMessage_ReceivedMessageEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ServerMessage_ReceivedMessageEvent) ProtoMessage() {}
+
+func (x *ServerMessage_ReceivedMessageEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_room_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ServerMessage_ReceivedMessageEvent.ProtoReflect.Descriptor instead.
+func (*ServerMessage_ReceivedMessageEvent) Descriptor() ([]byte, []int) {
+	return file_proto_room_proto_rawDescGZIP(), []int{4, 3}
+}
+
+func (x *ServerMessage_ReceivedMessageEvent) GetMessage() *Message {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+func (x *ServerMessage_ReceivedMessageEvent) GetSenderID() string {
+	if x != nil {
+		return x.SenderID
+	}
+	return ""
+}
+
 var File_proto_room_proto protoreflect.FileDescriptor
 
 var file_proto_room_proto_rawDesc = []byte{
@@ -773,83 +773,97 @@ var file_proto_room_proto_rawDesc = []byte{
 	0x12, 0x16, 0x0a, 0x06, 0x72, 0x6f, 0x6f, 0x6d, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x06, 0x72, 0x6f, 0x6f, 0x6d, 0x49, 0x44, 0x12, 0x22, 0x0a, 0x0c, 0x61, 0x6c, 0x72, 0x65,
 	0x61, 0x64, 0x79, 0x45, 0x78, 0x69, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0c,
-	0x61, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x45, 0x78, 0x69, 0x73, 0x74, 0x22, 0xb1, 0x01, 0x0a,
-	0x07, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x2d, 0x0a, 0x08, 0x6a, 0x6f, 0x69, 0x6e,
-	0x52, 0x6f, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x71, 0x75, 0x61,
-	0x72, 0x6b, 0x2e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x48, 0x00, 0x52, 0x08, 0x6a,
-	0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x36, 0x0a, 0x0b, 0x73, 0x65, 0x6e, 0x64, 0x4d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x71,
-	0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x61, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x45, 0x78, 0x69, 0x73, 0x74, 0x22, 0xf1, 0x02, 0x0a,
+	0x0d, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x42,
+	0x0a, 0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x24, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x43,
+	0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x48, 0x00, 0x52, 0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x52, 0x6f,
+	0x6f, 0x6d, 0x12, 0x4b, 0x0a, 0x0b, 0x73, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e,
+	0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x53, 0x65,
+	0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
 	0x48, 0x00, 0x52, 0x0b, 0x73, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12,
-	0x30, 0x0a, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x10, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x4c, 0x65, 0x61, 0x76, 0x65,
-	0x52, 0x6f, 0x6f, 0x6d, 0x48, 0x00, 0x52, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f,
-	0x6d, 0x42, 0x0d, 0x0a, 0x0b, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x54, 0x79, 0x70, 0x65,
-	0x22, 0x22, 0x0a, 0x08, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x16, 0x0a, 0x06,
-	0x72, 0x6f, 0x6f, 0x6d, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x72, 0x6f,
-	0x6f, 0x6d, 0x49, 0x44, 0x22, 0x37, 0x0a, 0x0b, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x12, 0x28, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x4d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x0b, 0x0a,
-	0x09, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x22, 0xb9, 0x02, 0x0a, 0x05, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x12, 0x54, 0x0a, 0x15, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x4f,
-	0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x6f, 0x6d, 0x6d,
-	0x61, 0x6e, 0x64, 0x4f, 0x70, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x72, 0x72, 0x6f,
-	0x72, 0x48, 0x00, 0x52, 0x15, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x4f, 0x70, 0x65, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x42, 0x0a, 0x0f, 0x6a, 0x6f,
-	0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x65, 0x64, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x4a, 0x6f, 0x69, 0x6e,
-	0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x65, 0x64, 0x48, 0x00, 0x52, 0x0f, 0x6a,
-	0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x65, 0x64, 0x12, 0x45,
-	0x0a, 0x10, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65,
-	0x65, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b,
-	0x2e, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x65,
-	0x64, 0x48, 0x00, 0x52, 0x10, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75,
-	0x63, 0x63, 0x65, 0x65, 0x64, 0x12, 0x42, 0x0a, 0x0f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
-	0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16,
-	0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65,
-	0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x48, 0x00, 0x52, 0x0f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x42, 0x0b, 0x0a, 0x09, 0x65, 0x76, 0x65,
-	0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x22, 0x2b, 0x0a, 0x0f, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f,
-	0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x65, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x63, 0x74,
-	0x6f, 0x72, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x63, 0x74, 0x6f,
-	0x72, 0x49, 0x44, 0x22, 0x12, 0x0a, 0x10, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d,
-	0x53, 0x75, 0x63, 0x63, 0x65, 0x65, 0x64, 0x22, 0x57, 0x0a, 0x0f, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x12, 0x28, 0x0a, 0x07, 0x6d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x71, 0x75,
-	0x61, 0x72, 0x6b, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x49, 0x44,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x49, 0x44,
-	0x22, 0xff, 0x01, 0x0a, 0x15, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x4f, 0x70, 0x65, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x1c, 0x0a, 0x09, 0x65, 0x72,
-	0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x65,
-	0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x65, 0x72, 0x72, 0x6f,
-	0x72, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x65,
-	0x72, 0x72, 0x6f, 0x72, 0x44, 0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x2d, 0x0a, 0x08, 0x6a, 0x6f,
-	0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x71,
-	0x75, 0x61, 0x72, 0x6b, 0x2e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x48, 0x00, 0x52,
-	0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x36, 0x0a, 0x0b, 0x73, 0x65, 0x6e,
-	0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12,
-	0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61,
-	0x67, 0x65, 0x48, 0x00, 0x52, 0x0b, 0x73, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x12, 0x30, 0x0a, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x4c, 0x65, 0x61,
-	0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x48, 0x00, 0x52, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52,
-	0x6f, 0x6f, 0x6d, 0x42, 0x0d, 0x0a, 0x0b, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x54, 0x79,
-	0x70, 0x65, 0x22, 0x37, 0x0a, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a,
-	0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x63, 0x6f, 0x64,
-	0x65, 0x12, 0x18, 0x0a, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0c, 0x52, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x32, 0x76, 0x0a, 0x04, 0x52,
-	0x6f, 0x6f, 0x6d, 0x12, 0x41, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f,
-	0x6d, 0x12, 0x18, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x71, 0x75,
-	0x61, 0x72, 0x6b, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x07, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x12, 0x0e, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e,
-	0x64, 0x1a, 0x0c, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x28,
-	0x01, 0x30, 0x01, 0x42, 0x0d, 0x5a, 0x0b, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x45, 0x0a, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x25, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e,
+	0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f,
+	0x6f, 0x6d, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x48, 0x00, 0x52, 0x09, 0x6c, 0x65, 0x61,
+	0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x1a, 0x29, 0x0a, 0x0f, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f,
+	0x6f, 0x6d, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x6f, 0x6f,
+	0x6d, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x72, 0x6f, 0x6f, 0x6d, 0x49,
+	0x44, 0x1a, 0x3e, 0x0a, 0x12, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x28, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b,
+	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x1a, 0x12, 0x0a, 0x10, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x43, 0x6f,
+	0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x42, 0x09, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x22, 0x37, 0x0a, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x63,
+	0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12,
+	0x18, 0x0a, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x22, 0xc9, 0x06, 0x0a, 0x0d, 0x53, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x4d, 0x0a, 0x0f, 0x6f,
+	0x6e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x46, 0x61, 0x69, 0x6c, 0x65, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61,
+	0x6e, 0x64, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x48, 0x00, 0x52, 0x0f, 0x6f, 0x6e, 0x43, 0x6f, 0x6d,
+	0x6d, 0x61, 0x6e, 0x64, 0x46, 0x61, 0x69, 0x6c, 0x65, 0x64, 0x12, 0x54, 0x0a, 0x11, 0x6f, 0x6e,
+	0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65,
+	0x72, 0x76, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4a, 0x6f, 0x69, 0x6e,
+	0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x48, 0x00, 0x52, 0x11, 0x6f,
+	0x6e, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x12, 0x57, 0x0a, 0x12, 0x6f, 0x6e, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x53,
+	0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x71,
+	0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x2e, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63,
+	0x65, 0x73, 0x73, 0x48, 0x00, 0x52, 0x12, 0x6f, 0x6e, 0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f,
+	0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x59, 0x0a, 0x11, 0x6f, 0x6e, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x52, 0x65, 0x63, 0x65, 0x69,
+	0x76, 0x65, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x48,
+	0x00, 0x52, 0x11, 0x6f, 0x6e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x63, 0x65,
+	0x69, 0x76, 0x65, 0x64, 0x1a, 0xb6, 0x02, 0x0a, 0x0c, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x45, 0x72, 0x72, 0x6f, 0x72, 0x12, 0x1c, 0x0a, 0x09, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f,
+	0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x43,
+	0x6f, 0x64, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x44, 0x65, 0x74, 0x61,
+	0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x44,
+	0x65, 0x74, 0x61, 0x69, 0x6c, 0x12, 0x42, 0x0a, 0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f,
+	0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e,
+	0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e, 0x4a, 0x6f,
+	0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x48, 0x00, 0x52,
+	0x08, 0x6a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x4b, 0x0a, 0x0b, 0x73, 0x65, 0x6e,
+	0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27,
+	0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73,
+	0x73, 0x61, 0x67, 0x65, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x48, 0x00, 0x52, 0x0b, 0x73, 0x65, 0x6e, 0x64, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x45, 0x0a, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52,
+	0x6f, 0x6f, 0x6d, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x71, 0x75, 0x61, 0x72,
+	0x6b, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2e,
+	0x4c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x48, 0x00, 0x52, 0x09, 0x6c, 0x65, 0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x42, 0x0e, 0x0a,
+	0x0c, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x1a, 0x2b, 0x0a,
+	0x0f, 0x4a, 0x6f, 0x69, 0x6e, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x12, 0x18, 0x0a, 0x07, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x49, 0x44, 0x1a, 0x12, 0x0a, 0x10, 0x4c, 0x65,
+	0x61, 0x76, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x53, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x1a, 0x5c,
+	0x0a, 0x14, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x28, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x12, 0x1a, 0x0a, 0x08, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x08, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x49, 0x44, 0x42, 0x07, 0x0a, 0x05,
+	0x65, 0x76, 0x65, 0x6e, 0x74, 0x32, 0x84, 0x01, 0x0a, 0x04, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x41,
+	0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x12, 0x18, 0x2e, 0x71,
+	0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x6f, 0x6f, 0x6d, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x39, 0x0a, 0x07, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x14, 0x2e, 0x71,
+	0x75, 0x61, 0x72, 0x6b, 0x2e, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x1a, 0x14, 0x2e, 0x71, 0x75, 0x61, 0x72, 0x6b, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x28, 0x01, 0x30, 0x01, 0x42, 0x0d, 0x5a, 0x0b,
+	0x71, 0x75, 0x61, 0x72, 0x6b, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -866,36 +880,36 @@ func file_proto_room_proto_rawDescGZIP() []byte {
 
 var file_proto_room_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_proto_room_proto_goTypes = []interface{}{
-	(*CreateRoomRequest)(nil),     // 0: quark.CreateRoomRequest
-	(*CreateRoomResponse)(nil),    // 1: quark.CreateRoomResponse
-	(*Command)(nil),               // 2: quark.Command
-	(*JoinRoom)(nil),              // 3: quark.JoinRoom
-	(*SendMessage)(nil),           // 4: quark.SendMessage
-	(*LeaveRoom)(nil),             // 5: quark.LeaveRoom
-	(*Event)(nil),                 // 6: quark.Event
-	(*JoinRoomSucceed)(nil),       // 7: quark.JoinRoomSucceed
-	(*LeaveRoomSucceed)(nil),      // 8: quark.LeaveRoomSucceed
-	(*MessageReceived)(nil),       // 9: quark.MessageReceived
-	(*CommandOperationError)(nil), // 10: quark.CommandOperationError
-	(*Message)(nil),               // 11: quark.Message
+	(*CreateRoomRequest)(nil),                  // 0: quark.CreateRoomRequest
+	(*CreateRoomResponse)(nil),                 // 1: quark.CreateRoomResponse
+	(*ClientMessage)(nil),                      // 2: quark.ClientMessage
+	(*Message)(nil),                            // 3: quark.Message
+	(*ServerMessage)(nil),                      // 4: quark.ServerMessage
+	(*ClientMessage_JoinRoomCommand)(nil),      // 5: quark.ClientMessage.JoinRoomCommand
+	(*ClientMessage_SendMessageCommand)(nil),   // 6: quark.ClientMessage.SendMessageCommand
+	(*ClientMessage_LeaveRoomCommand)(nil),     // 7: quark.ClientMessage.LeaveRoomCommand
+	(*ServerMessage_CommandError)(nil),         // 8: quark.ServerMessage.CommandError
+	(*ServerMessage_JoinRoomSuccess)(nil),      // 9: quark.ServerMessage.JoinRoomSuccess
+	(*ServerMessage_LeaveRoomSuccess)(nil),     // 10: quark.ServerMessage.LeaveRoomSuccess
+	(*ServerMessage_ReceivedMessageEvent)(nil), // 11: quark.ServerMessage.ReceivedMessageEvent
 }
 var file_proto_room_proto_depIdxs = []int32{
-	3,  // 0: quark.Command.joinRoom:type_name -> quark.JoinRoom
-	4,  // 1: quark.Command.sendMessage:type_name -> quark.SendMessage
-	5,  // 2: quark.Command.leaveRoom:type_name -> quark.LeaveRoom
-	11, // 3: quark.SendMessage.message:type_name -> quark.Message
-	10, // 4: quark.Event.commandOperationError:type_name -> quark.CommandOperationError
-	7,  // 5: quark.Event.joinRoomSucceed:type_name -> quark.JoinRoomSucceed
-	8,  // 6: quark.Event.leaveRoomSucceed:type_name -> quark.LeaveRoomSucceed
-	9,  // 7: quark.Event.messageReceived:type_name -> quark.MessageReceived
-	11, // 8: quark.MessageReceived.message:type_name -> quark.Message
-	3,  // 9: quark.CommandOperationError.joinRoom:type_name -> quark.JoinRoom
-	4,  // 10: quark.CommandOperationError.sendMessage:type_name -> quark.SendMessage
-	5,  // 11: quark.CommandOperationError.leaveRoom:type_name -> quark.LeaveRoom
+	5,  // 0: quark.ClientMessage.joinRoom:type_name -> quark.ClientMessage.JoinRoomCommand
+	6,  // 1: quark.ClientMessage.sendMessage:type_name -> quark.ClientMessage.SendMessageCommand
+	7,  // 2: quark.ClientMessage.leaveRoom:type_name -> quark.ClientMessage.LeaveRoomCommand
+	8,  // 3: quark.ServerMessage.onCommandFailed:type_name -> quark.ServerMessage.CommandError
+	9,  // 4: quark.ServerMessage.onJoinRoomSuccess:type_name -> quark.ServerMessage.JoinRoomSuccess
+	10, // 5: quark.ServerMessage.onLeaveRoomSuccess:type_name -> quark.ServerMessage.LeaveRoomSuccess
+	11, // 6: quark.ServerMessage.onMessageReceived:type_name -> quark.ServerMessage.ReceivedMessageEvent
+	3,  // 7: quark.ClientMessage.SendMessageCommand.message:type_name -> quark.Message
+	5,  // 8: quark.ServerMessage.CommandError.joinRoom:type_name -> quark.ClientMessage.JoinRoomCommand
+	6,  // 9: quark.ServerMessage.CommandError.sendMessage:type_name -> quark.ClientMessage.SendMessageCommand
+	7,  // 10: quark.ServerMessage.CommandError.leaveRoom:type_name -> quark.ClientMessage.LeaveRoomCommand
+	3,  // 11: quark.ServerMessage.ReceivedMessageEvent.message:type_name -> quark.Message
 	0,  // 12: quark.Room.CreateRoom:input_type -> quark.CreateRoomRequest
-	2,  // 13: quark.Room.Service:input_type -> quark.Command
+	2,  // 13: quark.Room.Service:input_type -> quark.ClientMessage
 	1,  // 14: quark.Room.CreateRoom:output_type -> quark.CreateRoomResponse
-	6,  // 15: quark.Room.Service:output_type -> quark.Event
+	4,  // 15: quark.Room.Service:output_type -> quark.ServerMessage
 	14, // [14:16] is the sub-list for method output_type
 	12, // [12:14] is the sub-list for method input_type
 	12, // [12:12] is the sub-list for extension type_name
@@ -934,7 +948,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Command); i {
+			switch v := v.(*ClientMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -946,7 +960,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*JoinRoom); i {
+			switch v := v.(*Message); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -958,7 +972,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendMessage); i {
+			switch v := v.(*ServerMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -970,7 +984,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LeaveRoom); i {
+			switch v := v.(*ClientMessage_JoinRoomCommand); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -982,7 +996,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Event); i {
+			switch v := v.(*ClientMessage_SendMessageCommand); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -994,7 +1008,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*JoinRoomSucceed); i {
+			switch v := v.(*ClientMessage_LeaveRoomCommand); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1006,7 +1020,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LeaveRoomSucceed); i {
+			switch v := v.(*ServerMessage_CommandError); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1018,7 +1032,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MessageReceived); i {
+			switch v := v.(*ServerMessage_JoinRoomSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1030,7 +1044,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommandOperationError); i {
+			switch v := v.(*ServerMessage_LeaveRoomSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1042,7 +1056,7 @@ func file_proto_room_proto_init() {
 			}
 		}
 		file_proto_room_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Message); i {
+			switch v := v.(*ServerMessage_ReceivedMessageEvent); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1055,20 +1069,20 @@ func file_proto_room_proto_init() {
 		}
 	}
 	file_proto_room_proto_msgTypes[2].OneofWrappers = []interface{}{
-		(*Command_JoinRoom)(nil),
-		(*Command_SendMessage)(nil),
-		(*Command_LeaveRoom)(nil),
+		(*ClientMessage_JoinRoom)(nil),
+		(*ClientMessage_SendMessage)(nil),
+		(*ClientMessage_LeaveRoom)(nil),
 	}
-	file_proto_room_proto_msgTypes[6].OneofWrappers = []interface{}{
-		(*Event_CommandOperationError)(nil),
-		(*Event_JoinRoomSucceed)(nil),
-		(*Event_LeaveRoomSucceed)(nil),
-		(*Event_MessageReceived)(nil),
+	file_proto_room_proto_msgTypes[4].OneofWrappers = []interface{}{
+		(*ServerMessage_OnCommandFailed)(nil),
+		(*ServerMessage_OnJoinRoomSuccess)(nil),
+		(*ServerMessage_OnLeaveRoomSuccess)(nil),
+		(*ServerMessage_OnMessageReceived)(nil),
 	}
-	file_proto_room_proto_msgTypes[10].OneofWrappers = []interface{}{
-		(*CommandOperationError_JoinRoom)(nil),
-		(*CommandOperationError_SendMessage)(nil),
-		(*CommandOperationError_LeaveRoom)(nil),
+	file_proto_room_proto_msgTypes[8].OneofWrappers = []interface{}{
+		(*ServerMessage_CommandError_JoinRoom)(nil),
+		(*ServerMessage_CommandError_SendMessage)(nil),
+		(*ServerMessage_CommandError_LeaveRoom)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

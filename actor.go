@@ -1,6 +1,10 @@
 package quark
 
-import "github.com/google/uuid"
+import (
+	"sync"
+
+	"github.com/google/uuid"
+)
 
 type ActorID string
 
@@ -15,10 +19,8 @@ func (a ActorID) String() string {
 type Actor struct {
 	id ActorID
 
-	setEntry chan<- *RoomEntry
-	getEntry chan<- getActorEntry
-
-	quit chan<- interface{}
+	re *RoomEntry
+	mu sync.RWMutex
 }
 
 type Payload struct {
@@ -32,34 +34,7 @@ type getActorEntry struct {
 
 func NewActor() *Actor {
 	actorID := NewActorID()
-
-	setEntry := make(chan *RoomEntry)
-	getEntry := make(chan getActorEntry)
-	quit := make(chan interface{})
-
-	go func() {
-		defer close(setEntry)
-		defer close(getEntry)
-
-		var entry *RoomEntry
-		for {
-			select {
-			case <-quit:
-				return
-			case e := <-setEntry:
-				entry = e
-			case g := <-getEntry:
-				g.out <- entry
-			}
-		}
-	}()
-
-	return &Actor{
-		id:       actorID,
-		setEntry: setEntry,
-		getEntry: getEntry,
-		quit:     quit,
-	}
+	return &Actor{id: actorID}
 }
 
 func (a *Actor) ActorID() ActorID {
@@ -68,14 +43,16 @@ func (a *Actor) ActorID() ActorID {
 
 func (a *Actor) JoinTo(r *Room) {
 	e := r.NewEntry()
-	a.setEntry <- e
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.re = e
 }
 
 func (a *Actor) roomEntry() *RoomEntry {
-	out := make(chan *RoomEntry)
-	defer close(out)
-	a.getEntry <- getActorEntry{out: out}
-	return <-out
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.re
 }
 
 func (a *Actor) Leave() bool {
@@ -83,8 +60,11 @@ func (a *Actor) Leave() bool {
 	if e == nil {
 		return false
 	}
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
 	e.Leave()
-	a.setEntry <- nil
+	a.re = nil
 	return true
 }
 
@@ -109,10 +89,6 @@ func (a *Actor) Inbox() <-chan Message {
 		return c
 	}
 	return a.roomEntry().Subscription()
-}
-
-func (a *Actor) Stop() {
-	close(a.quit)
 }
 
 func (a *Actor) InRoom() bool {

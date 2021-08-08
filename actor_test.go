@@ -15,7 +15,6 @@ func TestActor_Leave(t *testing.T) {
 	defer r.Stop()
 
 	a := NewActor()
-	defer a.Stop()
 
 	a.JoinTo(r)
 	require.True(t, a.InRoom())
@@ -40,13 +39,8 @@ func TestActor_BroadcastToRoom(t *testing.T) {
 	defer cancel()
 
 	a1 := NewActor()
-	defer a1.Stop()
-
 	a2 := NewActor()
-	defer a2.Stop()
-
 	a3 := NewActor()
-	defer a3.Stop()
 
 	a1.JoinTo(r)
 	a2.JoinTo(r)
@@ -116,8 +110,6 @@ M:
 	}
 
 	a4 := NewActor()
-	defer a4.Stop()
-
 	a4.JoinTo(r)
 
 	body = make([]byte, 1024)

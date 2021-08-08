@@ -31,17 +31,17 @@ func (s *roomServer) CreateRoom(ctx context.Context, req *proto.CreateRoomReques
 func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	fail := make(chan error, 1)
 
-	joinSucceed := make(chan interface{})
-	defer close(joinSucceed)
-	leaveSucceed := make(chan interface{})
-	defer close(leaveSucceed)
-	cmdFailed := make(chan commandError, 1)
-	defer close(cmdFailed)
+	onJoined := make(chan interface{})
+	onLeaved := make(chan interface{})
+	onCommandFailed := make(chan commandError, 1)
 
 	actor := quark.NewActor()
 
+	// recv loop
 	go func() {
-		defer actor.Stop()
+		defer close(onJoined)
+		defer close(onLeaved)
+		defer close(onCommandFailed)
 
 		for {
 			select {
@@ -57,57 +57,61 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					return
 				}
 
-				switch c := in.CommandType.(type) {
-				case *proto.Command_JoinRoom:
-					cmd := c.JoinRoom
-					roomID := quark.RoomID(cmd.RoomID)
-					ok := s.roomSet.JoinRoom(roomID, actor)
-					if ok {
-						joinSucceed <- struct{}{}
+				switch cmd := in.Command.(type) {
+				case *proto.ClientMessage_JoinRoom:
+					roomID := quark.RoomID(cmd.JoinRoom.RoomID)
+					if ok := s.roomSet.JoinRoom(roomID, actor); ok {
+						onJoined <- struct{}{}
 					} else {
-						cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
+						onCommandFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd.JoinRoom}
 					}
-				case *proto.Command_LeaveRoom:
-					actor.Leave()
-					leaveSucceed <- struct{}{}
-				case *proto.Command_SendMessage:
-					cmd := c.SendMessage
-
+				case *proto.ClientMessage_SendMessage:
 					ok := actor.BroadcastToRoom(quark.Payload{
-						Code: cmd.Message.Code,
-						Body: cmd.Message.Payload})
+						Code: cmd.SendMessage.Message.Code,
+						Body: cmd.SendMessage.Message.Payload})
 					if !ok {
-						cmdFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd}
+						onCommandFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd.SendMessage}
 					}
+				case *proto.ClientMessage_LeaveRoom:
+					actor.Leave()
+					onLeaved <- struct{}{}
 				}
 			}
 		}
 	}()
 
+	// send loop
 	go func() {
+		inbox := actor.Inbox()
+
 		for {
 			select {
-			case <-joinSucceed:
-				ev := proto.Event{
-					EventType: &proto.Event_JoinRoomSucceed{
-						JoinRoomSucceed: &proto.JoinRoomSucceed{
+			case <-stream.Context().Done():
+				return
+			case c := <-onCommandFailed:
+				e := toCommandErrorEvent(c)
+				msg := proto.ServerMessage{
+					Event: &proto.ServerMessage_OnCommandFailed{
+						OnCommandFailed: e,
+					},
+				}
+				if err := stream.Send(&msg); err != nil {
+					fail <- err
+				}
+			case <-onJoined:
+				inbox = actor.Inbox()
+
+				msg := proto.ServerMessage{
+					Event: &proto.ServerMessage_OnJoinRoomSuccess{
+						OnJoinRoomSuccess: &proto.ServerMessage_JoinRoomSuccess{
 							ActorID: actor.ActorID().String(),
 						},
 					},
 				}
-				if err := stream.Send(&ev); err != nil {
+				if err := stream.Send(&msg); err != nil {
 					fail <- err
 				}
-			case <-leaveSucceed:
-				ev := proto.Event{
-					EventType: &proto.Event_LeaveRoomSucceed{
-						LeaveRoomSucceed: &proto.LeaveRoomSucceed{},
-					},
-				}
-				if err := stream.Send(&ev); err != nil {
-					fail <- err
-				}
-			case m, ok := <-actor.Inbox():
+			case m, ok := <-inbox:
 				if !ok {
 					continue
 				}
@@ -115,9 +119,9 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					// skip send
 					continue
 				}
-				ev := proto.Event{
-					EventType: &proto.Event_MessageReceived{
-						MessageReceived: &proto.MessageReceived{
+				msg := proto.ServerMessage{
+					Event: &proto.ServerMessage_OnMessageReceived{
+						OnMessageReceived: &proto.ServerMessage_ReceivedMessageEvent{
 							SenderID: m.Sender.String(),
 							Message: &proto.Message{
 								Code:    m.Code,
@@ -126,23 +130,25 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 						},
 					},
 				}
-				if err := stream.Send(&ev); err != nil {
+				if err := stream.Send(&msg); err != nil {
 					fail <- err
 				}
-			case c := <-cmdFailed:
-				e := toCommandOperationError(c)
-				ev := proto.Event{
-					EventType: &proto.Event_CommandOperationError{
-						CommandOperationError: e,
+			case <-onLeaved:
+				inbox = actor.Inbox()
+
+				msg := proto.ServerMessage{
+					Event: &proto.ServerMessage_OnLeaveRoomSuccess{
+						OnLeaveRoomSuccess: &proto.ServerMessage_LeaveRoomSuccess{},
 					},
 				}
-				if err := stream.Send(&ev); err != nil {
+				if err := stream.Send(&msg); err != nil {
 					fail <- err
 				}
 			}
 		}
 	}()
 
+	// error handling loop
 	for {
 		select {
 		case <-stream.Context().Done():
@@ -159,26 +165,26 @@ type commandError struct {
 	cmd    interface{}
 }
 
-func toCommandOperationError(c commandError) *proto.CommandOperationError {
+func toCommandErrorEvent(c commandError) *proto.ServerMessage_CommandError {
 	switch cmd := c.cmd.(type) {
-	case *proto.Command_JoinRoom:
-		return &proto.CommandOperationError{
+	case *proto.ClientMessage_JoinRoomCommand:
+		return &proto.ServerMessage_CommandError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
-			CommandType: &proto.CommandOperationError_JoinRoom{
-				JoinRoom: cmd.JoinRoom,
+			ErrorCommand: &proto.ServerMessage_CommandError_JoinRoom{
+				JoinRoom: cmd,
 			},
 		}
-	case *proto.Command_SendMessage:
-		return &proto.CommandOperationError{
+	case *proto.ClientMessage_SendMessageCommand:
+		return &proto.ServerMessage_CommandError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
-			CommandType: &proto.CommandOperationError_SendMessage{
-				SendMessage: cmd.SendMessage,
+			ErrorCommand: &proto.ServerMessage_CommandError_SendMessage{
+				SendMessage: cmd,
 			},
 		}
 	default:
-		return &proto.CommandOperationError{
+		return &proto.ServerMessage_CommandError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
 		}

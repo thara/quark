@@ -57,9 +57,9 @@ func main() {
 		log.Fatalf("fail to service: %v", err)
 	}
 
-	if err := stream.Send(&proto.Command{
-		CommandType: &proto.Command_JoinRoom{
-			JoinRoom: &proto.JoinRoom{
+	if err := stream.Send(&proto.ClientMessage{
+		Command: &proto.ClientMessage_JoinRoom{
+			JoinRoom: &proto.ClientMessage_JoinRoomCommand{
 				RoomID: roomID,
 			},
 		},
@@ -82,20 +82,20 @@ func main() {
 				log.Fatalf("Failed to receive a note : %v", err)
 			}
 
-			switch ev := in.EventType.(type) {
-			case *proto.Event_JoinRoomSucceed:
-				id := ev.JoinRoomSucceed.ActorID
+			switch ev := in.Event.(type) {
+			case *proto.ServerMessage_OnJoinRoomSuccess:
+				id := ev.OnJoinRoomSuccess.ActorID
 				fmt.Printf("You are %s\n", id)
 
 				fmt.Printf("%s > ", id)
 				actorID.Store(id)
 
 				joined <- struct{}{}
-			case *proto.Event_LeaveRoomSucceed:
+			case *proto.ServerMessage_OnLeaveRoomSuccess:
 				fmt.Println("bye.")
 				os.Exit(0)
-			case *proto.Event_MessageReceived:
-				recvMsg := ev.MessageReceived
+			case *proto.ServerMessage_OnMessageReceived:
+				recvMsg := ev.OnMessageReceived
 				cmd := parseCmd(recvMsg.SenderID, recvMsg.Message.Code, recvMsg.Message.Payload)
 				cmd.display()
 
@@ -122,9 +122,9 @@ func main() {
 
 		switch text {
 		case "!exit":
-			if err := stream.Send(&proto.Command{
-				CommandType: &proto.Command_LeaveRoom{
-					LeaveRoom: &proto.LeaveRoom{},
+			if err := stream.Send(&proto.ClientMessage{
+				Command: &proto.ClientMessage_LeaveRoom{
+					LeaveRoom: &proto.ClientMessage_LeaveRoomCommand{},
 				},
 			}); err != nil {
 				log.Fatalf("Failed to leave room: %v", err)
@@ -207,9 +207,9 @@ func parseCmd(senderID string, code uint32, payload []byte) cmd {
 }
 
 func sendMessage(stream proto.Room_ServiceClient, m *proto.Message) error {
-	return stream.Send(&proto.Command{
-		CommandType: &proto.Command_SendMessage{
-			SendMessage: &proto.SendMessage{
+	return stream.Send(&proto.ClientMessage{
+		Command: &proto.ClientMessage_SendMessage{
+			SendMessage: &proto.ClientMessage_SendMessageCommand{
 				Message: m,
 			},
 		},

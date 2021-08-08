@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
 	"quark"
@@ -99,9 +97,9 @@ func TestRoomServer_Service(t *testing.T) {
 	// c1: join
 	var senderActorID string
 	{
-		err := s1.Send(&proto.Command{
-			CommandType: &proto.Command_JoinRoom{
-				JoinRoom: &proto.JoinRoom{
+		err := s1.Send(&proto.ClientMessage{
+			Command: &proto.ClientMessage_JoinRoom{
+				JoinRoom: &proto.ClientMessage_JoinRoomCommand{
 					RoomID: roomID,
 				},
 			},
@@ -111,14 +109,14 @@ func TestRoomServer_Service(t *testing.T) {
 		m, err := s1.Recv()
 		require.NoError(t, err)
 
-		assert.IsType(t, m.EventType, &proto.Event_JoinRoomSucceed{})
-		senderActorID = m.EventType.(*proto.Event_JoinRoomSucceed).JoinRoomSucceed.ActorID
+		assert.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoomSuccess{})
+		senderActorID = m.Event.(*proto.ServerMessage_OnJoinRoomSuccess).OnJoinRoomSuccess.ActorID
 	}
 	// c2: join
 	{
-		err := s2.Send(&proto.Command{
-			CommandType: &proto.Command_JoinRoom{
-				JoinRoom: &proto.JoinRoom{
+		err := s2.Send(&proto.ClientMessage{
+			Command: &proto.ClientMessage_JoinRoom{
+				JoinRoom: &proto.ClientMessage_JoinRoomCommand{
 					RoomID: roomID,
 				},
 			},
@@ -128,13 +126,13 @@ func TestRoomServer_Service(t *testing.T) {
 		m, err := s2.Recv()
 		require.NoError(t, err)
 
-		assert.IsType(t, m.EventType, &proto.Event_JoinRoomSucceed{})
+		assert.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoomSuccess{})
 	}
 	// c3: join
 	{
-		err := s3.Send(&proto.Command{
-			CommandType: &proto.Command_JoinRoom{
-				JoinRoom: &proto.JoinRoom{
+		err := s3.Send(&proto.ClientMessage{
+			Command: &proto.ClientMessage_JoinRoom{
+				JoinRoom: &proto.ClientMessage_JoinRoomCommand{
 					RoomID: roomID,
 				},
 			},
@@ -144,7 +142,7 @@ func TestRoomServer_Service(t *testing.T) {
 		m, err := s3.Recv()
 		require.NoError(t, err)
 
-		assert.IsType(t, m.EventType, &proto.Event_JoinRoomSucceed{})
+		assert.IsType(t, m.Event, &proto.ServerMessage_OnJoinRoomSuccess{})
 	}
 
 	// c1: send msg
@@ -153,9 +151,9 @@ func TestRoomServer_Service(t *testing.T) {
 		payload = make([]byte, 100)
 		rand.Read(payload)
 
-		err := s1.Send(&proto.Command{
-			CommandType: &proto.Command_SendMessage{
-				SendMessage: &proto.SendMessage{
+		err := s1.Send(&proto.ClientMessage{
+			Command: &proto.ClientMessage_SendMessage{
+				SendMessage: &proto.ClientMessage_SendMessageCommand{
 					Message: &proto.Message{
 						Code:    code,
 						Payload: payload,
@@ -172,10 +170,10 @@ func TestRoomServer_Service(t *testing.T) {
 	{
 		m, err := s2.Recv()
 		require.NoError(t, err)
-		assert.IsType(t, m.EventType, &proto.Event_MessageReceived{})
+		require.IsType(t, m.Event, &proto.ServerMessage_OnMessageReceived{})
 
-		ev := m.EventType.(*proto.Event_MessageReceived)
-		msg := ev.MessageReceived
+		ev := m.Event.(*proto.ServerMessage_OnMessageReceived)
+		msg := ev.OnMessageReceived
 
 		assert.Equal(t, senderActorID, msg.SenderID)
 		assert.Equal(t, code, msg.Message.Code)
@@ -185,10 +183,10 @@ func TestRoomServer_Service(t *testing.T) {
 	{
 		m, err := s3.Recv()
 		require.NoError(t, err)
-		assert.IsType(t, m.EventType, &proto.Event_MessageReceived{})
+		require.IsType(t, m.Event, &proto.ServerMessage_OnMessageReceived{})
 
-		ev := m.EventType.(*proto.Event_MessageReceived)
-		msg := ev.MessageReceived
+		ev := m.Event.(*proto.ServerMessage_OnMessageReceived)
+		msg := ev.OnMessageReceived
 
 		assert.Equal(t, senderActorID, msg.SenderID)
 		assert.Equal(t, code, msg.Message.Code)
@@ -197,16 +195,16 @@ func TestRoomServer_Service(t *testing.T) {
 
 	// c3: leave
 	{
-		err := s3.Send(&proto.Command{
-			CommandType: &proto.Command_LeaveRoom{
-				LeaveRoom: &proto.LeaveRoom{},
+		err := s3.Send(&proto.ClientMessage{
+			Command: &proto.ClientMessage_LeaveRoom{
+				LeaveRoom: &proto.ClientMessage_LeaveRoomCommand{},
 			},
 		})
 		require.NoError(t, err)
 
 		m, err := s3.Recv()
 		require.NoError(t, err)
-		assert.IsType(t, m.EventType, &proto.Event_LeaveRoomSucceed{})
+		assert.IsType(t, m.Event, &proto.ServerMessage_OnLeaveRoomSuccess{})
 	}
 
 	// c1: send msg 2
@@ -216,7 +214,6 @@ func TestRoomServer_Service(t *testing.T) {
 	go func() {
 		_, err = s3.Recv() // blocking
 		require.Error(t, err)
-		assert.Equal(t, codes.DeadlineExceeded, status.Code(err))
 	}()
 
 	<-ctx.Done()

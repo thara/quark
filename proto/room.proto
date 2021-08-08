@@ -6,7 +6,7 @@ option go_package = "quark/proto";
 
 service Room {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
-  rpc Service(stream Command) returns (stream Event);
+  rpc Service(stream ClientMessage) returns (stream ServerMessage);
 }
 
 message CreateRoomRequest { string roomName = 1; }
@@ -16,50 +16,49 @@ message CreateRoomResponse {
   bool alreadyExist = 2;
 }
 
-message Command {
-  oneof commandType {
-    JoinRoom joinRoom = 1;
-    SendMessage sendMessage = 2;
-    LeaveRoom leaveRoom = 3;
+message ClientMessage {
+  oneof command {
+    JoinRoomCommand joinRoom = 1;
+    SendMessageCommand sendMessage = 2;
+    LeaveRoomCommand leaveRoom = 3;
   }
-}
 
-message JoinRoom { uint64 roomID = 1; }
-message SendMessage { Message message = 1; }
-message LeaveRoom {}
-
-message Event {
-  oneof eventType {
-    CommandOperationError commandOperationError = 1;
-    JoinRoomSucceed joinRoomSucceed = 2;
-    LeaveRoomSucceed leaveRoomSucceed = 3;
-    MessageReceived messageReceived = 4;
-  }
-}
-
-message JoinRoomSucceed {
-  string actorID = 1;
-}
-message LeaveRoomSucceed {
-}
-
-message MessageReceived {
-  Message message = 1;
-  string senderID = 2;
-}
-
-message CommandOperationError {
-  string errorCode = 1;
-  string errorDetail = 2;
-
-  oneof commandType {
-    JoinRoom joinRoom = 3;
-    SendMessage sendMessage = 4;
-    LeaveRoom leaveRoom = 5;
-  }
+  message JoinRoomCommand { uint64 roomID = 1; }
+  message SendMessageCommand { Message message = 1; }
+  message LeaveRoomCommand {}
 }
 
 message Message {
   uint32 code = 1;
   bytes payload = 2;
+}
+
+message ServerMessage {
+  oneof event {
+    // command result
+    CommandError onCommandFailed = 1;
+    JoinRoomSuccess onJoinRoomSuccess = 2;
+    LeaveRoomSuccess onLeaveRoomSuccess = 3;
+
+    ReceivedMessageEvent onMessageReceived = 4;
+  }
+
+  message CommandError {
+    string errorCode = 1;
+    string errorDetail = 2;
+
+    oneof errorCommand {
+      ClientMessage.JoinRoomCommand joinRoom = 3;
+      ClientMessage.SendMessageCommand sendMessage = 4;
+      ClientMessage.LeaveRoomCommand leaveRoom = 5;
+    }
+  }
+
+  message JoinRoomSuccess { string actorID = 1; }
+  message LeaveRoomSuccess {}
+
+  message ReceivedMessageEvent {
+    Message message = 1;
+    string senderID = 2;
+  }
 }
