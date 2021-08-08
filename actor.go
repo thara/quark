@@ -28,10 +28,6 @@ type Payload struct {
 	Body []byte
 }
 
-type getActorEntry struct {
-	out chan<- *RoomEntry
-}
-
 func NewActor() *Actor {
 	actorID := NewActorID()
 	return &Actor{id: actorID}
