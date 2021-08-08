@@ -9,66 +9,74 @@ service Room {
   rpc Service(stream ClientMessage) returns (stream ServerMessage);
 }
 
-message CreateRoomRequest { string roomName = 1; }
+message CreateRoomRequest {
+  string roomName = 1;
+}
 
 message CreateRoomResponse {
-  uint64 roomID = 1;
-  bool alreadyExist = 2;
+  uint64 roomID       = 1;
+  bool   alreadyExist = 2;
 }
 
 message ClientMessage {
   oneof command {
-    JoinRoomCommand joinRoom = 1;
+    JoinRoomCommand    joinRoom    = 1;
     SendMessageCommand sendMessage = 2;
-    LeaveRoomCommand leaveRoom = 3;
+    LeaveRoomCommand   leaveRoom   = 3;
   }
 
-  message JoinRoomCommand { uint64 roomID = 1; }
-  message SendMessageCommand { Message message = 1; }
+  message JoinRoomCommand {
+    uint64 roomID = 1;
+  }
+  message SendMessageCommand {
+    Message message = 1;
+  }
   message LeaveRoomCommand {}
 }
 
 message Message {
-  uint32 code = 1;
-  bytes payload = 2;
+  uint32 code    = 1;
+  bytes  payload = 2;
 }
 
 message ServerMessage {
   oneof event {
     // command result
-    CommandError onCommandFailed = 1;
-    JoinRoomSuccess onJoinRoomSuccess = 2;
+    CommandError     onCommandFailed    = 1;
+    JoinRoomSuccess  onJoinRoomSuccess  = 2;
     LeaveRoomSuccess onLeaveRoomSuccess = 3;
 
     ReceivedMessageEvent onMessageReceived = 4;
-    JoinRoom onJoinRoom = 5;
-    LeaveRoom onLeaveRoom = 6;
+    JoinRoom             onJoinRoom        = 5;
+    LeaveRoom            onLeaveRoom       = 6;
   }
 
   message CommandError {
-    string errorCode = 1;
+    string errorCode   = 1;
     string errorDetail = 2;
 
     oneof errorCommand {
-      ClientMessage.JoinRoomCommand joinRoom = 3;
+      ClientMessage.JoinRoomCommand    joinRoom    = 3;
       ClientMessage.SendMessageCommand sendMessage = 4;
-      ClientMessage.LeaveRoomCommand leaveRoom = 5;
+      ClientMessage.LeaveRoomCommand   leaveRoom   = 5;
     }
   }
 
-  message JoinRoomSuccess { string actorID = 1; }
+  message JoinRoomSuccess {
+    string actorID = 1;
+  }
   message LeaveRoomSuccess {}
 
   message ReceivedMessageEvent {
-    Message message = 1;
-    string senderID = 2;
+    Message message  = 1;
+    string  senderID = 2;
   }
   message JoinRoom {
     repeated string actorIDList = 1;
-    string newActorID = 2;
+    string          newActorID  = 2;
   }
   message LeaveRoom {
-    repeated string actorIDList = 1;
-    string removedActorID = 2;
+    repeated string actorIDList    = 1;
+    string          removedActorID = 2;
   }
 }

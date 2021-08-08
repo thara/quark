@@ -24,7 +24,7 @@ clean:
 .PHONY: fmt
 fmt:
 	go fmt $$(go list ./...)
-	clang-format -i proto/**/*.proto
+	clang-format -i proto/*.proto
 
 .PHONY: lint
 lint:
