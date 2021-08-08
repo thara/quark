@@ -22,7 +22,8 @@ func (e *JoinRoomEvent) EventType() RoomEventType {
 }
 
 type LeaveRoomEvent struct {
-	ActorList []ActorID
+	ActorList    []ActorID
+	RemovedActor ActorID
 }
 
 func (e *LeaveRoomEvent) EventType() RoomEventType {

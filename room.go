@@ -87,6 +87,14 @@ func NewRoom() *Room {
 				if s, ok := subscribers[id]; ok {
 					delete(subscribers, id)
 					close(s)
+
+					ev := LeaveRoomEvent{
+						ActorList:    currentActors(),
+						RemovedActor: id,
+					}
+					for _, other := range subscribers {
+						other <- ev
+					}
 				}
 			case m := <-messages:
 				for _, s := range subscribers {

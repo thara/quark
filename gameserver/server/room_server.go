@@ -157,6 +157,22 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					if err := stream.Send(&msg); err != nil {
 						fail <- err
 					}
+				case quark.LeaveRoomEvent:
+					ids := make([]string, len(m.ActorList))
+					for i, a := range m.ActorList {
+						ids[i] = a.String()
+					}
+					msg := proto.ServerMessage{
+						Event: &proto.ServerMessage_OnLeaveRoom{
+							OnLeaveRoom: &proto.ServerMessage_LeaveRoom{
+								ActorIDList:    ids,
+								RemovedActorID: m.RemovedActor.String(),
+							},
+						},
+					}
+					if err := stream.Send(&msg); err != nil {
+						fail <- err
+					}
 				}
 
 			}

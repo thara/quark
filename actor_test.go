@@ -101,6 +101,16 @@ L:
 	}
 
 	a2.Leave()
+	{
+		m := <-a1.Inbox()
+		require.IsType(t, m, LeaveRoomEvent{})
+		assert.Len(t, m.(LeaveRoomEvent).ActorList, 2)
+	}
+	{
+		m := <-a3.Inbox()
+		require.IsType(t, m, LeaveRoomEvent{})
+		assert.Len(t, m.(LeaveRoomEvent).ActorList, 2)
+	}
 
 	body = make([]byte, 1024)
 	rand.Read(body)

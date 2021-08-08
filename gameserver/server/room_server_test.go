@@ -230,6 +230,22 @@ func TestRoomServer_Service(t *testing.T) {
 		require.NoError(t, err)
 		assert.IsType(t, m.Event, &proto.ServerMessage_OnLeaveRoomSuccess{})
 	}
+	{
+		m, err := s1.Recv()
+		require.NoError(t, err)
+		require.IsType(t, m.Event, &proto.ServerMessage_OnLeaveRoom{})
+
+		ev := m.Event.(*proto.ServerMessage_OnLeaveRoom)
+		assert.Len(t, ev.OnLeaveRoom.ActorIDList, 2)
+	}
+	{
+		m, err := s2.Recv()
+		require.NoError(t, err)
+		require.IsType(t, m.Event, &proto.ServerMessage_OnLeaveRoom{})
+
+		ev := m.Event.(*proto.ServerMessage_OnLeaveRoom)
+		assert.Len(t, ev.OnLeaveRoom.ActorIDList, 2)
+	}
 
 	// c1: send msg 2
 	sendMsg()
