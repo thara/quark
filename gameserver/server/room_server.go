@@ -33,7 +33,6 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 
 	onJoined := make(chan interface{})
 	onLeaved := make(chan interface{})
-	onCommandFailed := make(chan commandError, 1)
 
 	actor := quark.NewActor()
 
@@ -41,7 +40,6 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	go func() {
 		defer close(onJoined)
 		defer close(onLeaved)
-		defer close(onCommandFailed)
 
 		for {
 			select {
@@ -63,14 +61,20 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					if ok := s.roomSet.JoinRoom(roomID, actor); ok {
 						onJoined <- struct{}{}
 					} else {
-						onCommandFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd.JoinRoom}
+						msg := toServerMessage(commandError{code: "001", detail: "room does not exist", cmd: cmd.JoinRoom})
+						if err := stream.Send(msg); err != nil {
+							fail <- err
+						}
 					}
 				case *proto.ClientMessage_SendMessage:
 					ok := actor.BroadcastToRoom(quark.Payload{
 						Code: cmd.SendMessage.Message.Code,
 						Body: cmd.SendMessage.Message.Payload})
 					if !ok {
-						onCommandFailed <- commandError{code: "001", detail: "room does not exist", cmd: cmd.SendMessage}
+						msg := toServerMessage(commandError{code: "001", detail: "room does not exist", cmd: cmd.SendMessage})
+						if err := stream.Send(msg); err != nil {
+							fail <- err
+						}
 					}
 				case *proto.ClientMessage_LeaveRoom:
 					actor.Leave()
@@ -88,16 +92,6 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 			select {
 			case <-stream.Context().Done():
 				return
-			case c := <-onCommandFailed:
-				e := toCommandErrorEvent(c)
-				msg := proto.ServerMessage{
-					Event: &proto.ServerMessage_OnCommandFailed{
-						OnCommandFailed: e,
-					},
-				}
-				if err := stream.Send(&msg); err != nil {
-					fail <- err
-				}
 			case <-onJoined:
 				inbox = actor.Inbox()
 
@@ -106,6 +100,17 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 						OnJoinRoomSuccess: &proto.ServerMessage_JoinRoomSuccess{
 							ActorID: actor.ActorID().String(),
 						},
+					},
+				}
+				if err := stream.Send(&msg); err != nil {
+					fail <- err
+				}
+			case <-onLeaved:
+				inbox = actor.Inbox()
+
+				msg := proto.ServerMessage{
+					Event: &proto.ServerMessage_OnLeaveRoomSuccess{
+						OnLeaveRoomSuccess: &proto.ServerMessage_LeaveRoomSuccess{},
 					},
 				}
 				if err := stream.Send(&msg); err != nil {
@@ -133,17 +138,6 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				if err := stream.Send(&msg); err != nil {
 					fail <- err
 				}
-			case <-onLeaved:
-				inbox = actor.Inbox()
-
-				msg := proto.ServerMessage{
-					Event: &proto.ServerMessage_OnLeaveRoomSuccess{
-						OnLeaveRoomSuccess: &proto.ServerMessage_LeaveRoomSuccess{},
-					},
-				}
-				if err := stream.Send(&msg); err != nil {
-					fail <- err
-				}
 			}
 		}
 	}()
@@ -165,10 +159,11 @@ type commandError struct {
 	cmd    interface{}
 }
 
-func toCommandErrorEvent(c commandError) *proto.ServerMessage_CommandError {
+func toServerMessage(c commandError) *proto.ServerMessage {
+	var cmdErr *proto.ServerMessage_CommandError
 	switch cmd := c.cmd.(type) {
 	case *proto.ClientMessage_JoinRoomCommand:
-		return &proto.ServerMessage_CommandError{
+		cmdErr = &proto.ServerMessage_CommandError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
 			ErrorCommand: &proto.ServerMessage_CommandError_JoinRoom{
@@ -176,7 +171,7 @@ func toCommandErrorEvent(c commandError) *proto.ServerMessage_CommandError {
 			},
 		}
 	case *proto.ClientMessage_SendMessageCommand:
-		return &proto.ServerMessage_CommandError{
+		cmdErr = &proto.ServerMessage_CommandError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
 			ErrorCommand: &proto.ServerMessage_CommandError_SendMessage{
@@ -184,9 +179,15 @@ func toCommandErrorEvent(c commandError) *proto.ServerMessage_CommandError {
 			},
 		}
 	default:
-		return &proto.ServerMessage_CommandError{
+		cmdErr = &proto.ServerMessage_CommandError{
 			ErrorCode:   c.code,
 			ErrorDetail: c.detail,
 		}
+	}
+
+	return &proto.ServerMessage{
+		Event: &proto.ServerMessage_OnCommandFailed{
+			OnCommandFailed: cmdErr,
+		},
 	}
 }
