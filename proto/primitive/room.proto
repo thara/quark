@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package quark.primitive;
+
+option go_package = "quark/proto/primitive";
+
+message Room {
+  uint64 roomID   = 1;
+  string roomName = 2;
+}

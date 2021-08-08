@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package quark;
+
+option go_package = "quark/proto";
+
+import "proto/room.proto";
+import "proto/primitive/game_server.proto";
+import "proto/primitive/room.proto";
+
+service Lobby {
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  rpc InLobby(InLobbyRequest) returns (stream InLobbyMessage);
+
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  /* rpc JoinRandomRoom(JoinRandomRoomRequest) returns (JoinRandomRoomResponse);
+   */
+  /* rpc JoinOrCreateRoom(JoinOrCreateRoomRequest) returns
+   * (JoinOrCreateRoomResponse); */
+}
+
+message JoinRoomRequest {
+  uint64 roomID = 1;
+}
+
+message JoinRoomResponse {
+  primitive.GameServer server = 1;
+}
+
+message InLobbyRequest {}
+message InLobbyMessage {
+  oneof message {
+    RoomListUpdatedEvent onUpdatedRoomList = 1;
+  }
+
+  message RoomListUpdatedEvent {
+    repeated primitive.Room roomList = 1;
+  }
+}
+
+/* message JoinRandomRoomRequest {} */
+/* message JoinRandomRoomResponse { */
+/*   GameServer server = 1; */
+/*   uint64 roomID = 2; */
+/* } */
+
+/* message JoinOrCreateRoomRequest { */
+/*   string roomName = 1; */
+/* } */
+
+/* message JoinOrCreateRoomResponse { */
+/*   GameServer server = 1; */
+/*   uint64 roomID = 2; */
+/* } */

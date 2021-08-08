@@ -18,13 +18,13 @@ $(PROTOC_GEN_GO_GRPC):
 .PHONY: clean
 clean:
 	rm -rf bin
-	rm -f proto/*.pb.go
-	rm -f health/*.pb.go
+	rm -f proto/**/*.pb.go
 
 .PHONY: fmt
 fmt:
 	go fmt $$(go list ./...)
 	clang-format -i proto/*.proto
+	clang-format -i proto/**/*.proto
 
 .PHONY: lint
 lint:

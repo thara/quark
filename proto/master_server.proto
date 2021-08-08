@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package quark;
+
+option go_package = "quark/proto";
+
+import "google/protobuf/empty.proto";
+import "proto/primitive/game_server.proto";
+import "proto/primitive/room.proto";
+
+service MasterServer {
+  rpc RegisterGameServer(RegisterGameServerRequest)
+      returns (stream MasterServerMessage);
+  rpc Update(stream GameServerStatus) returns (google.protobuf.Empty);
+}
+
+message RegisterGameServerRequest {
+  primitive.GameServer newGameServer = 1;
+}
+
+message MasterServerMessage {
+  oneof message {
+    GameServerRegistered registered = 1;
+    RoomAllocation       allocation = 2;
+  }
+
+  message GameServerRegistered {
+    string gameServerID = 1;
+  }
+
+  message RoomAllocation {
+    primitive.Room room = 1;
+  }
+}
+
+message GameServerStatus {
+  repeated RoomState updateRoomState = 1;
+
+  message RoomState {
+    primitive.Room room       = 1;
+    uint64         actorCount = 2;
+  }
+}

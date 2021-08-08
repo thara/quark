@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package quark.primitive;
+
+option go_package = "quark/proto/primitive";
+
+message GameServer {
+  string address = 1;
+  string port    = 2;
+}
