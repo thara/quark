@@ -16,38 +16,39 @@ var (
 )
 
 type RoomStatus struct {
-	roomID     RoomID
-	actorCount int
+	RoomID     RoomID
+	RoomName   string
+	ActorCount uint
 }
 
 type GameServerID string
 
 type GameServerAddr struct {
-	addr string
-	port string
+	Addr string
+	Port string
 }
 
 type GameServer struct {
 	id      GameServerID
 	addr    GameServerAddr
 	rooms   map[RoomID]*RoomStatus
-	nActors int
-	roomCap int
+	nActors uint
+	roomCap uint
 	mux     sync.RWMutex
 }
 
-func newGameServer(id GameServerID, addr GameServerAddr, roomCap int) *GameServer {
+func newGameServer(id GameServerID, addr GameServerAddr, roomCap uint) *GameServer {
 	return &GameServer{id: id, addr: addr, rooms: make(map[RoomID]*RoomStatus), roomCap: roomCap}
 }
 
-func (g *GameServer) Cap() int {
-	return g.roomCap - len(g.rooms)
+func (g *GameServer) Cap() uint {
+	return g.roomCap - uint(len(g.rooms))
 }
 
 func (g *GameServer) HasCapacity() bool {
 	g.mux.RLock()
 	defer g.mux.RUnlock()
-	return len(g.rooms) < g.roomCap
+	return len(g.rooms) < int(g.roomCap)
 }
 
 func (g *GameServer) AddRoom(roomID RoomID) error {
@@ -58,7 +59,7 @@ func (g *GameServer) AddRoom(roomID RoomID) error {
 	if ok {
 		return ErrRoomAlreadyAllocated
 	}
-	g.rooms[roomID] = &RoomStatus{roomID: roomID}
+	g.rooms[roomID] = &RoomStatus{RoomID: roomID}
 	return nil
 }
 
@@ -66,36 +67,59 @@ func (g *GameServer) UpdateRoomStatus(status RoomStatus) error {
 	g.mux.Lock()
 	defer g.mux.Unlock()
 
-	_, ok := g.rooms[status.roomID]
+	_, ok := g.rooms[status.RoomID]
 	if !ok {
 		return ErrRoomStatusNotFound
 	}
-	g.rooms[status.roomID] = &status
+	g.rooms[status.RoomID] = &status
 
-	n := 0
+	var n uint = 0
 	for _, s := range g.rooms {
-		n += s.actorCount
+		n += s.ActorCount
 	}
 	g.nActors = n
 	return nil
 }
 
+type RoomAllocatedEvent struct {
+	GameServer GameServerAddr
+	Room       RoomStatus
+}
+
 type Fleet struct {
-	rs  map[RoomID]*RoomStatus
-	rg  map[RoomID]*GameServer
-	g   []*GameServer
+	rs map[RoomID]*RoomStatus
+	rg map[RoomID]*GameServer
+	g  []*GameServer
+
+	allocListeners map[chan<- RoomAllocatedEvent]bool
+
 	mux sync.RWMutex
 }
 
 func NewFleet() *Fleet {
 	return &Fleet{
-		rs: make(map[RoomID]*RoomStatus),
-		rg: make(map[RoomID]*GameServer),
-		g:  make([]*GameServer, 0),
+		rs:             make(map[RoomID]*RoomStatus),
+		rg:             make(map[RoomID]*GameServer),
+		g:              make([]*GameServer, 0),
+		allocListeners: make(map[chan<- RoomAllocatedEvent]bool),
 	}
 }
 
-func (f *Fleet) RegisterGameServer(addr GameServerAddr, cap int) GameServerID {
+func (f *Fleet) AddRoomAllocationListener(c chan<- RoomAllocatedEvent) {
+	f.mux.Lock()
+	defer f.mux.Unlock()
+
+	f.allocListeners[c] = true
+}
+
+func (f *Fleet) RemoveRoomAllocationListener(c chan<- RoomAllocatedEvent) {
+	f.mux.Lock()
+	defer f.mux.Unlock()
+
+	delete(f.allocListeners, c)
+}
+
+func (f *Fleet) RegisterGameServer(addr GameServerAddr, cap uint) GameServerID {
 	f.mux.Lock()
 	defer f.mux.Unlock()
 
@@ -106,7 +130,21 @@ func (f *Fleet) RegisterGameServer(addr GameServerAddr, cap int) GameServerID {
 	return id
 }
 
-func (f *Fleet) AllocateRoom(roomID RoomID) (GameServerAddr, error) {
+func (f *Fleet) IsRegisteredGameServer(id GameServerID) bool {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	for _, g := range f.g {
+		if g.id == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *Fleet) AllocateRoom(room RoomStatus) (GameServerAddr, error) {
+	roomID := room.RoomID
+
 	err := func() error {
 		f.mux.RLock()
 		defer f.mux.RUnlock()
@@ -149,7 +187,16 @@ func (f *Fleet) AllocateRoom(roomID RoomID) (GameServerAddr, error) {
 	}
 
 	f.rg[roomID] = g
-	f.rs[roomID] = &RoomStatus{roomID: roomID, actorCount: 0}
+	f.rs[roomID] = &RoomStatus{RoomID: roomID, ActorCount: 0}
+
+	ev := RoomAllocatedEvent{
+		GameServer: g.addr,
+		Room:       room,
+	}
+	for c := range f.allocListeners {
+		c <- ev
+	}
+
 	return g.addr, nil
 }
 
@@ -163,7 +210,7 @@ func (f *Fleet) LookupGameServerAddr(roomID RoomID) (GameServerAddr, bool) {
 func (f *Fleet) UpdateRoomStatus(status RoomStatus) error {
 	f.mux.Lock()
 	defer f.mux.Unlock()
-	roomID := status.roomID
+	roomID := status.RoomID
 
 	_, ok := f.rs[roomID]
 	if !ok {
