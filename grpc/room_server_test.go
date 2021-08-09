@@ -23,7 +23,7 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	lis := listenServer(ctx, roomServer)
+	lis := listenRoomServer(ctx, roomServer)
 	conn, err := grpc.DialContext(ctx, "bufnet", listenDialOption(lis), grpc.WithInsecure())
 	require.NoError(t, err)
 	cli := proto.NewRoomClient(conn)
@@ -259,7 +259,7 @@ func TestRoomServer_Service(t *testing.T) {
 	<-ctx.Done()
 }
 
-func listenServer(ctx context.Context, rs proto.RoomServer) *bufconn.Listener {
+func listenRoomServer(ctx context.Context, rs proto.RoomServer) *bufconn.Listener {
 	lis := bufconn.Listen(1024 * 1024)
 	s := grpc.NewServer()
 	proto.RegisterRoomServer(s, rs)

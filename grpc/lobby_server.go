@@ -12,13 +12,17 @@ import (
 	"quark/proto/primitive"
 )
 
-type LobbyServer struct {
+type lobbyServer struct {
 	proto.UnimplementedLobbyServer
 
 	fleet *masterserver.Fleet
 }
 
-func (s *LobbyServer) CreateRoom(ctx context.Context, req *proto.CreateRoomRequest) (*proto.CreateRoomResponse, error) {
+func NewLobbyServer(fleet *masterserver.Fleet) proto.LobbyServer {
+	return &lobbyServer{fleet: fleet}
+}
+
+func (s *lobbyServer) CreateRoom(ctx context.Context, req *proto.CreateRoomRequest) (*proto.CreateRoomResponse, error) {
 	var roomName string
 	if len(req.RoomName) == 0 {
 		roomName = "default"
@@ -28,7 +32,7 @@ func (s *LobbyServer) CreateRoom(ctx context.Context, req *proto.CreateRoomReque
 
 	roomID := quark.NewRoomID()
 	_, err := s.fleet.AllocateRoom(roomID, roomName)
-	if err == nil && err != masterserver.ErrRoomAlreadyAllocated {
+	if err != nil && err != masterserver.ErrRoomAlreadyAllocated {
 		return nil, status.Errorf(codes.Aborted, err.Error())
 	}
 	return &proto.CreateRoomResponse{
@@ -37,7 +41,7 @@ func (s *LobbyServer) CreateRoom(ctx context.Context, req *proto.CreateRoomReque
 	}, nil
 }
 
-func (s *LobbyServer) InLobby(req *proto.InLobbyRequest, stream proto.Lobby_InLobbyServer) error {
+func (s *lobbyServer) InLobby(req *proto.InLobbyRequest, stream proto.Lobby_InLobbyServer) error {
 	c := make(chan masterserver.RoomAllocatedEvent)
 	s.fleet.AddRoomAllocationListener(c)
 	defer func() {
@@ -75,7 +79,7 @@ func (s *LobbyServer) InLobby(req *proto.InLobbyRequest, stream proto.Lobby_InLo
 	}
 }
 
-func (s *LobbyServer) JoinRoom(ctx context.Context, req *proto.JoinRoomRequest) (*proto.JoinRoomResponse, error) {
+func (s *lobbyServer) JoinRoom(ctx context.Context, req *proto.JoinRoomRequest) (*proto.JoinRoomResponse, error) {
 	roomID := quark.RoomID(req.RoomID)
 	addr, ok := s.fleet.LookupGameServerAddr(roomID)
 	if !ok {

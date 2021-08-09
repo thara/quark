@@ -2,7 +2,6 @@ package masterserver
 
 import (
 	"errors"
-	"fmt"
 	"sort"
 	"sync"
 
@@ -126,7 +125,6 @@ func (f *Fleet) RegisterGameServer(addr GameServerAddr, cap uint) GameServerID {
 	defer f.mux.Unlock()
 
 	id := GameServerID(uuid.Must(uuid.NewRandom()).String())
-	fmt.Println("GameServerID", id)
 	gs := newGameServer(id, addr, cap)
 	f.g = append(f.g, gs)
 	return id

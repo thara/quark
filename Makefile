@@ -43,6 +43,9 @@ protocall:
 bin/gameserver: protocall $(wildcard gameserver/**/*.go)
 	go build -o $@ ./cmd/gameserver
 
+bin/masterserver: protocall $(wildcard masterserver/**/*.go)
+	go build -o $@ ./cmd/masterserver
+
 sample_chatclient: gameserver
 	go run ./example/chatclient/main.go
 

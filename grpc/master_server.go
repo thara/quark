@@ -16,13 +16,17 @@ import (
 
 const GameServerIDMetadataKey = "quark-gameserver-id"
 
-type MasterServer struct {
+type masterServer struct {
 	proto.UnimplementedMasterServerServer
 
 	fleet *masterserver.Fleet
 }
 
-func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, stream proto.MasterServer_RegisterGameServerServer) error {
+func NewMasterServer(fleet *masterserver.Fleet) proto.MasterServerServer {
+	return &masterServer{fleet: fleet}
+}
+
+func (s *masterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, stream proto.MasterServer_RegisterGameServerServer) error {
 	if req.NewGameServer == nil {
 		return status.Errorf(codes.InvalidArgument, "NewGameServer is required")
 	}
@@ -80,7 +84,7 @@ func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, 
 	}
 }
 
-func (s *MasterServer) Update(stream proto.MasterServer_UpdateServer) error {
+func (s *masterServer) Update(stream proto.MasterServer_UpdateServer) error {
 	gameServerID, ok := getGameServerID(stream.Context())
 	if !ok {
 		return status.Errorf(codes.PermissionDenied, "game server ID is required in metadata")
