@@ -44,7 +44,7 @@ bin/gameserver: protocall $(wildcard gameserver/**/*.go)
 	go build -o $@ ./gameserver
 
 sample_chatclient: gameserver
-	go run ./gameserver/example/chatclient/main.go
+	go run ./example/chatclient/main.go
 
 # quark:
 # 	go build -ldflags '-X quark.Version=$(QUARK_VERSION)' .
