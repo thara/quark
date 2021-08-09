@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"quark/gameserver/server"
+	quark_grpc "quark/grpc"
 	"quark/proto"
 )
 
@@ -54,8 +54,8 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	proto.RegisterHealthServer(grpcServer, new(server.HealthServer))
-	proto.RegisterRoomServer(grpcServer, server.NewRoomServer())
+	proto.RegisterHealthServer(grpcServer, new(quark_grpc.HealthServer))
+	proto.RegisterRoomServer(grpcServer, quark_grpc.NewRoomServer())
 
 	go func() {
 		log.Printf("gRPC service listen at %s", addr)
