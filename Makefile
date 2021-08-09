@@ -31,7 +31,7 @@ lint:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	staticcheck $$(go list ./... | grep -v 'proto')
 
-.PHONY: lint
+.PHONY: test
 test:
 	go clean -testcache ./...
 	go test -cover -race -coverprofile=coverage.out -covermode=atomic -v $$(go list ./...)
@@ -47,6 +47,11 @@ proto/room.pb.go: $(PROTOC_GEN_GO)
 
 proto/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
 	protoc --go-grpc_out=.. proto/room.proto
+
+.PHONY: proto_all
+protocall: clean
+	protoc --go_out=.. --go-grpc_out=.. proto/**/*.proto
+
 
 gameserver: proto/room.pb.go proto/room_grpc.pb.go proto/health.pb.go proto/health_grpc.pb.go $(wildcard gameserver/**/*.go)
 	go build -o bin/$@ ./gameserver
