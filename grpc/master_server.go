@@ -2,14 +2,16 @@ package grpc
 
 import (
 	"context"
-	"quark"
-	"quark/proto"
-	"quark/proto/primitive"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"quark"
+	"quark/masterserver"
+	"quark/proto"
+	"quark/proto/primitive"
 )
 
 const GameServerIDMetadataKey = "quark-gameserver-id"
@@ -17,7 +19,7 @@ const GameServerIDMetadataKey = "quark-gameserver-id"
 type MasterServer struct {
 	proto.UnimplementedMasterServerServer
 
-	fleet *quark.Fleet
+	fleet *masterserver.Fleet
 }
 
 func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, stream proto.MasterServer_RegisterGameServerServer) error {
@@ -32,8 +34,8 @@ func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, 
 		return status.Errorf(codes.InvalidArgument, "NewGameServer.Port must not be empty")
 	}
 
-	addr := quark.GameServerAddr{Addr: gs.Address, Port: gs.Port}
-	gameServerID := s.fleet.RegisterGameServer(quark.GameServerAddr{Addr: gs.Address, Port: gs.Port}, 5)
+	addr := masterserver.GameServerAddr{Addr: gs.Address, Port: gs.Port}
+	gameServerID := s.fleet.RegisterGameServer(masterserver.GameServerAddr{Addr: gs.Address, Port: gs.Port}, 5)
 
 	err := stream.Send(&proto.MasterServerMessage{
 		Message: &proto.MasterServerMessage_Registered{
@@ -46,7 +48,7 @@ func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, 
 		return err
 	}
 
-	c := make(chan quark.RoomAllocatedEvent)
+	c := make(chan masterserver.RoomAllocatedEvent)
 	s.fleet.AddRoomAllocationListener(c)
 	defer func() {
 		s.fleet.RemoveRoomAllocationListener(c)
@@ -97,7 +99,7 @@ func (s *MasterServer) Update(stream proto.MasterServer_UpdateServer) error {
 				return errors.WithStack(err)
 			}
 			for _, r := range m.UpdateRoomState {
-				newStatus := quark.RoomStatus{RoomID: quark.RoomID(r.Room.RoomID), RoomName: r.Room.RoomName, ActorCount: uint(r.ActorCount)}
+				newStatus := masterserver.RoomStatus{RoomID: quark.RoomID(r.Room.RoomID), RoomName: r.Room.RoomName, ActorCount: uint(r.ActorCount)}
 				err := s.fleet.UpdateRoomStatus(newStatus)
 				if err != nil {
 					return errors.WithStack(err)
@@ -107,11 +109,11 @@ func (s *MasterServer) Update(stream proto.MasterServer_UpdateServer) error {
 	}
 }
 
-func getGameServerID(ctx context.Context) (quark.GameServerID, bool) {
+func getGameServerID(ctx context.Context) (masterserver.GameServerID, bool) {
 	m, ok := metadata.FromIncomingContext(ctx)
 	if !ok || len(m[GameServerIDMetadataKey]) == 0 {
 		return "", false
 	}
 	s := m[GameServerIDMetadataKey][0]
-	return quark.GameServerID(s), true
+	return masterserver.GameServerID(s), true
 }

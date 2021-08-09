@@ -41,7 +41,7 @@ protocall:
 	protoc --go_out=.. --go-grpc_out=.. proto/**/*.proto
 
 bin/gameserver: protocall $(wildcard gameserver/**/*.go)
-	go build -o $@ ./gameserver
+	go build -o $@ ./cmd/gameserver
 
 sample_chatclient: gameserver
 	go run ./example/chatclient/main.go

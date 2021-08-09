@@ -13,13 +13,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 
-	"quark"
+	"quark/gameserver"
 	"quark/proto"
 )
 
 func TestRoomServer_CreateRoom(t *testing.T) {
 	roomServer := &roomServer{
-		roomSet: quark.NewRoomSet(),
+		roomSet: gameserver.NewRoomSet(),
 	}
 
 	ctx := context.Background()
@@ -55,7 +55,7 @@ func TestRoomServer_CreateRoom(t *testing.T) {
 
 func TestRoomServer_Service(t *testing.T) {
 	roomServer := &roomServer{
-		roomSet: quark.NewRoomSet(),
+		roomSet: gameserver.NewRoomSet(),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

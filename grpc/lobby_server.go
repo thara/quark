@@ -2,18 +2,20 @@ package grpc
 
 import (
 	"context"
-	"quark"
-	"quark/proto"
-	"quark/proto/primitive"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"quark"
+	"quark/masterserver"
+	"quark/proto"
+	"quark/proto/primitive"
 )
 
 type LobbyServer struct {
 	proto.UnimplementedLobbyServer
 
-	fleet *quark.Fleet
+	fleet *masterserver.Fleet
 }
 
 func (s *LobbyServer) CreateRoom(ctx context.Context, req *proto.CreateRoomRequest) (*proto.CreateRoomResponse, error) {
@@ -26,17 +28,17 @@ func (s *LobbyServer) CreateRoom(ctx context.Context, req *proto.CreateRoomReque
 
 	roomID := quark.NewRoomID()
 	_, err := s.fleet.AllocateRoom(roomID, roomName)
-	if err == nil && err != quark.ErrRoomAlreadyAllocated {
+	if err == nil && err != masterserver.ErrRoomAlreadyAllocated {
 		return nil, status.Errorf(codes.Aborted, err.Error())
 	}
 	return &proto.CreateRoomResponse{
 		RoomID:       roomID.Uint64(),
-		AlreadyExist: err == quark.ErrRoomAlreadyAllocated,
+		AlreadyExist: err == masterserver.ErrRoomAlreadyAllocated,
 	}, nil
 }
 
 func (s *LobbyServer) InLobby(req *proto.InLobbyRequest, stream proto.Lobby_InLobbyServer) error {
-	c := make(chan quark.RoomAllocatedEvent)
+	c := make(chan masterserver.RoomAllocatedEvent)
 	s.fleet.AddRoomAllocationListener(c)
 	defer func() {
 		s.fleet.RemoveRoomAllocationListener(c)

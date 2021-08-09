@@ -1,33 +1,25 @@
-package quark
+package gameserver
 
 import (
 	"math/rand"
 	"sync"
 
 	"github.com/google/uuid"
+
+	"quark"
 )
 
-type RoomID uint64
-
-func (r RoomID) Uint64() uint64 {
-	return uint64(r)
-}
-
-func NewRoomID() RoomID {
-	return RoomID(rand.Uint64())
-}
-
 type RoomSet struct {
-	rooms map[RoomID]*Room
-	names map[string]RoomID
+	rooms map[quark.RoomID]*Room
+	names map[string]quark.RoomID
 
 	mux sync.RWMutex
 }
 
 func NewRoomSet() *RoomSet {
 	return &RoomSet{
-		rooms: make(map[RoomID]*Room),
-		names: make(map[string]RoomID),
+		rooms: make(map[quark.RoomID]*Room),
+		names: make(map[string]quark.RoomID),
 	}
 }
 
@@ -39,26 +31,26 @@ func (s *RoomSet) Rooms() []*Room {
 	return rs
 }
 
-func (s *RoomSet) NewRoom(name string) (RoomID, bool) {
+func (s *RoomSet) NewRoom(name string) (quark.RoomID, bool) {
 	if len(name) == 0 {
 		name = uuid.Must(uuid.NewRandom()).String()
 	}
 
-	id, exists := func() (RoomID, bool) {
+	id, exists := func() (quark.RoomID, bool) {
 		s.mux.RLock()
 		defer s.mux.RUnlock()
 
 		if id, ok := s.names[name]; ok {
 			return id, true
 		} else {
-			return RoomID(0), false
+			return quark.RoomID(0), false
 		}
 	}()
 	if exists {
 		return id, true
 	}
 
-	newID := RoomID(rand.Uint64())
+	newID := quark.RoomID(rand.Uint64())
 	room := NewRoom()
 
 	func() {
@@ -71,7 +63,7 @@ func (s *RoomSet) NewRoom(name string) (RoomID, bool) {
 	return newID, false
 }
 
-func (s *RoomSet) GetRoom(id RoomID) (*Room, bool) {
+func (s *RoomSet) GetRoom(id quark.RoomID) (*Room, bool) {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -82,7 +74,7 @@ func (s *RoomSet) GetRoom(id RoomID) (*Room, bool) {
 	}
 }
 
-func (s *RoomSet) JoinRoom(roomID RoomID, a *Actor) bool {
+func (s *RoomSet) JoinRoom(roomID quark.RoomID, a *Actor) bool {
 	r, ok := s.GetRoom(roomID)
 	if !ok {
 		return false

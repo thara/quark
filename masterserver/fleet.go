@@ -1,4 +1,4 @@
-package quark
+package masterserver
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+
+	"quark"
 )
 
 var (
@@ -16,7 +18,7 @@ var (
 )
 
 type RoomStatus struct {
-	RoomID     RoomID
+	RoomID     quark.RoomID
 	RoomName   string
 	ActorCount uint
 }
@@ -31,14 +33,14 @@ type GameServerAddr struct {
 type GameServer struct {
 	id      GameServerID
 	addr    GameServerAddr
-	rooms   map[RoomID]*RoomStatus
+	rooms   map[quark.RoomID]*RoomStatus
 	nActors uint
 	roomCap uint
 	mux     sync.RWMutex
 }
 
 func newGameServer(id GameServerID, addr GameServerAddr, roomCap uint) *GameServer {
-	return &GameServer{id: id, addr: addr, rooms: make(map[RoomID]*RoomStatus), roomCap: roomCap}
+	return &GameServer{id: id, addr: addr, rooms: make(map[quark.RoomID]*RoomStatus), roomCap: roomCap}
 }
 
 func (g *GameServer) Cap() uint {
@@ -51,7 +53,7 @@ func (g *GameServer) HasCapacity() bool {
 	return len(g.rooms) < int(g.roomCap)
 }
 
-func (g *GameServer) AddRoom(roomID RoomID) error {
+func (g *GameServer) AddRoom(roomID quark.RoomID) error {
 	g.mux.Lock()
 	defer g.mux.Unlock()
 
@@ -87,8 +89,8 @@ type RoomAllocatedEvent struct {
 }
 
 type Fleet struct {
-	rs map[RoomID]*RoomStatus
-	rg map[RoomID]*GameServer
+	rs map[quark.RoomID]*RoomStatus
+	rg map[quark.RoomID]*GameServer
 	g  []*GameServer
 
 	allocListeners map[chan<- RoomAllocatedEvent]bool
@@ -98,8 +100,8 @@ type Fleet struct {
 
 func NewFleet() *Fleet {
 	return &Fleet{
-		rs:             make(map[RoomID]*RoomStatus),
-		rg:             make(map[RoomID]*GameServer),
+		rs:             make(map[quark.RoomID]*RoomStatus),
+		rg:             make(map[quark.RoomID]*GameServer),
 		g:              make([]*GameServer, 0),
 		allocListeners: make(map[chan<- RoomAllocatedEvent]bool),
 	}
@@ -142,7 +144,7 @@ func (f *Fleet) IsRegisteredGameServer(id GameServerID) bool {
 	return false
 }
 
-func (f *Fleet) AllocateRoom(roomID RoomID, roomName string) (GameServerAddr, error) {
+func (f *Fleet) AllocateRoom(roomID quark.RoomID, roomName string) (GameServerAddr, error) {
 	err := func() error {
 		f.mux.RLock()
 		defer f.mux.RUnlock()
@@ -199,7 +201,7 @@ func (f *Fleet) AllocateRoom(roomID RoomID, roomName string) (GameServerAddr, er
 	return g.addr, nil
 }
 
-func (f *Fleet) LookupGameServerAddr(roomID RoomID) (GameServerAddr, bool) {
+func (f *Fleet) LookupGameServerAddr(roomID quark.RoomID) (GameServerAddr, bool) {
 	f.mux.RLock()
 	defer f.mux.RUnlock()
 	g, ok := f.rg[roomID]

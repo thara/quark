@@ -1,4 +1,4 @@
-package quark
+package gameserver
 
 import (
 	"context"

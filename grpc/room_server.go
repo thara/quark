@@ -5,18 +5,19 @@ import (
 	"io"
 
 	"quark"
+	"quark/gameserver"
 	"quark/proto"
 )
 
 type roomServer struct {
 	proto.UnimplementedRoomServer
 
-	roomSet *quark.RoomSet
+	roomSet *gameserver.RoomSet
 }
 
 func NewRoomServer() proto.RoomServer {
 	return &roomServer{
-		roomSet: quark.NewRoomSet(),
+		roomSet: gameserver.NewRoomSet(),
 	}
 }
 
@@ -34,7 +35,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 	onJoined := make(chan interface{})
 	onLeaved := make(chan interface{})
 
-	actor := quark.NewActor()
+	actor := gameserver.NewActor()
 
 	// recv loop
 	go func() {
@@ -67,7 +68,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 						}
 					}
 				case *proto.ClientMessage_SendMessage:
-					ok := actor.BroadcastToRoom(quark.Payload{
+					ok := actor.BroadcastToRoom(gameserver.Payload{
 						Code: cmd.SendMessage.Message.Code,
 						Body: cmd.SendMessage.Message.Payload})
 					if !ok {
@@ -122,7 +123,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 				}
 
 				switch m := m.(type) {
-				case quark.ActorMessage:
+				case gameserver.ActorMessage:
 					if actor.IsOwnMessage(&m) {
 						// skip send
 						continue
@@ -141,7 +142,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					if err := stream.Send(&msg); err != nil {
 						fail <- err
 					}
-				case quark.JoinRoomEvent:
+				case gameserver.JoinRoomEvent:
 					ids := make([]string, len(m.ActorList))
 					for i, a := range m.ActorList {
 						ids[i] = a.String()
@@ -157,7 +158,7 @@ func (s *roomServer) Service(stream proto.Room_ServiceServer) error {
 					if err := stream.Send(&msg); err != nil {
 						fail <- err
 					}
-				case quark.LeaveRoomEvent:
+				case gameserver.LeaveRoomEvent:
 					ids := make([]string, len(m.ActorList))
 					for i, a := range m.ActorList {
 						ids[i] = a.String()

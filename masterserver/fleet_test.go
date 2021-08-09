@@ -1,10 +1,12 @@
-package quark
+package masterserver
 
 import (
 	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"quark"
 )
 
 func TestFleet_AllocateRoom(t *testing.T) {
@@ -18,21 +20,21 @@ func TestFleet_AllocateRoom(t *testing.T) {
 
 	fleet.RegisterGameServer(GameServerAddr{"127.0.0.1", "30000"}, 3)
 
-	r1 := RoomID(rand.Uint64())
+	r1 := quark.RoomID(rand.Uint64())
 	alloc1, err := fleet.AllocateRoom(r1, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, addr1, alloc1)
 
-	r2 := RoomID(rand.Uint64())
+	r2 := quark.RoomID(rand.Uint64())
 	alloc2, err := fleet.AllocateRoom(r2, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, addr2, alloc2)
 
-	r3 := RoomID(rand.Uint64())
+	r3 := quark.RoomID(rand.Uint64())
 	alloc3, err := fleet.AllocateRoom(r3, "")
 	if err != nil {
 		t.Fatal(err)
@@ -68,14 +70,14 @@ func TestFleet_UpdateRoomStatus(t *testing.T) {
 	addr3 := GameServerAddr{"127.0.0.1", "30000"}
 	fleet.RegisterGameServer(addr3, 3)
 
-	r1 := RoomID(rand.Uint64())
+	r1 := quark.RoomID(rand.Uint64())
 	alloc1, err := fleet.AllocateRoom(r1, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, addr1, alloc1)
 
-	r2 := RoomID(rand.Uint64())
+	r2 := quark.RoomID(rand.Uint64())
 	alloc2, err := fleet.AllocateRoom(r2, "")
 	if err != nil {
 		t.Fatal(err)
@@ -84,7 +86,7 @@ func TestFleet_UpdateRoomStatus(t *testing.T) {
 
 	fleet.UpdateRoomStatus(RoomStatus{RoomID: r2, ActorCount: 2})
 
-	r3 := RoomID(rand.Uint64())
+	r3 := quark.RoomID(rand.Uint64())
 	alloc3, err := fleet.AllocateRoom(r3, "")
 	if err != nil {
 		t.Fatal(err)
