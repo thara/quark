@@ -13,6 +13,10 @@ func (r RoomID) Uint64() uint64 {
 	return uint64(r)
 }
 
+func NewRoomID() RoomID {
+	return RoomID(rand.Uint64())
+}
+
 type RoomSet struct {
 	rooms map[RoomID]*Room
 	names map[string]RoomID

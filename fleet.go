@@ -142,9 +142,7 @@ func (f *Fleet) IsRegisteredGameServer(id GameServerID) bool {
 	return false
 }
 
-func (f *Fleet) AllocateRoom(room RoomStatus) (GameServerAddr, error) {
-	roomID := room.RoomID
-
+func (f *Fleet) AllocateRoom(roomID RoomID, roomName string) (GameServerAddr, error) {
 	err := func() error {
 		f.mux.RLock()
 		defer f.mux.RUnlock()
@@ -186,8 +184,9 @@ func (f *Fleet) AllocateRoom(room RoomStatus) (GameServerAddr, error) {
 		return GameServerAddr{}, err
 	}
 
+	room := RoomStatus{RoomID: roomID, RoomName: roomName, ActorCount: 0}
 	f.rg[roomID] = g
-	f.rs[roomID] = &RoomStatus{RoomID: roomID, ActorCount: 0}
+	f.rs[roomID] = &room
 
 	ev := RoomAllocatedEvent{
 		GameServer: g.addr,
@@ -228,4 +227,15 @@ func (f *Fleet) UpdateRoomStatus(status RoomStatus) error {
 		return f.g[i].Cap() > f.g[j].Cap()
 	})
 	return nil
+}
+
+func (f *Fleet) RoomList() []RoomStatus {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	rs := make([]RoomStatus, len(f.rs))
+	for i, r := range f.rs {
+		rs[i] = *r
+	}
+	return rs
 }

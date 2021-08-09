@@ -59,7 +59,7 @@ func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, 
 			return stream.Context().Err()
 		case ev := <-c:
 			if addr == ev.GameServer {
-				err := stream.Send(&proto.MasterServerMessage{
+				m := &proto.MasterServerMessage{
 					Message: &proto.MasterServerMessage_Allocation{
 						Allocation: &proto.MasterServerMessage_RoomAllocation{
 							Room: &primitive.Room{
@@ -68,7 +68,8 @@ func (s *MasterServer) RegisterGameServer(req *proto.RegisterGameServerRequest, 
 							},
 						},
 					},
-				})
+				}
+				err := stream.Send(m)
 				if err != nil {
 					return err
 				}
