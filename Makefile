@@ -36,25 +36,12 @@ test:
 	go clean -testcache ./...
 	go test -cover -race -coverprofile=coverage.out -covermode=atomic -v $$(go list ./...)
 
-proto/health.pb.go: $(PROTOC_GEN_GO)
-	protoc --go_out=.. proto/health.proto
-
-proto/health_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
-	protoc --go-grpc_out=.. proto/health.proto
-
-proto/room.pb.go: $(PROTOC_GEN_GO)
-	protoc --go_out=.. proto/room.proto
-
-proto/room_grpc.pb.go: $(PROTOC_GEN_GO_GRPC)
-	protoc --go-grpc_out=.. proto/room.proto
-
 .PHONY: proto_all
-protocall: clean
+protocall:
 	protoc --go_out=.. --go-grpc_out=.. proto/**/*.proto
 
-
-gameserver: proto/room.pb.go proto/room_grpc.pb.go proto/health.pb.go proto/health_grpc.pb.go $(wildcard gameserver/**/*.go)
-	go build -o bin/$@ ./gameserver
+bin/gameserver: protocall $(wildcard gameserver/**/*.go)
+	go build -o $@ ./gameserver
 
 sample_chatclient: gameserver
 	go run ./gameserver/example/chatclient/main.go
