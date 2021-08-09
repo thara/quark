@@ -1,32 +1,6 @@
 package gameserver
 
-type Message interface{}
-
-type ActorMessage struct {
-	Sender  ActorID
-	Code    uint32
-	Payload []byte
-}
-
 type subscription chan<- Message
-
-type RoomEntry struct {
-	id ActorID
-	r  *Room
-	s  chan Message
-}
-
-func (e *RoomEntry) Subscription() <-chan Message {
-	return e.s
-}
-
-func (e *RoomEntry) Send(m ActorMessage) {
-	e.r.messages <- m
-}
-
-func (e *RoomEntry) Leave() {
-	e.r.leave <- e.id
-}
 
 type Room struct {
 	join     chan<- roomJoinCmd
